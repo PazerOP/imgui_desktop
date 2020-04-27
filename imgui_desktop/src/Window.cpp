@@ -103,7 +103,7 @@ void Window::OnUpdateInternal()
 {
 	auto scope = EnterGLScope();
 
-	if (m_IsUpdateQueued || SDL_WaitEventTimeout(nullptr, 1000))
+	if (m_IsUpdateQueued || SDL_WaitEventTimeout(nullptr, int(m_SleepDuration * 1000)))
 	{
 		m_IsUpdateQueued = false;
 

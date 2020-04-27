@@ -33,6 +33,7 @@ namespace ImGuiDesktop
 
 		bool m_ShouldClose = false;
 		bool m_IsUpdateQueued = false;
+		float m_SleepDuration = 0.1f;
 
 		auto EnterGLScope();
 
