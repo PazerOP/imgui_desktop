@@ -110,8 +110,25 @@ void Window::OnUpdateInternal()
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
-			if (event.type == SDL_QUIT)
+			bool shouldQueueWakeup = true;
+
+			switch (event.type)
+			{
+			case SDL_QUIT:
 				SetShouldClose(true);
+				break;
+
+			case SDL_USEREVENT:
+			{
+				if (event.user.code == (int)CustomWindowEventCodes::Wakeup)
+					shouldQueueWakeup = false;
+			}
+			}
+
+			// Imgui has a lot of "measure, then update next frame" sort of stuff.
+			// Make sure we have an "extra" update before every sleep to account for that.
+			if (shouldQueueWakeup)
+				QueueUpdate();
 		}
 	}
 

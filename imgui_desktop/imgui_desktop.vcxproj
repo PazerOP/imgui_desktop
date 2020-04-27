@@ -27,11 +27,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ScopeGuards.cpp" />
     <ClCompile Include="src\GLContext.cpp" />
     <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\imgui_desktop\ImGuiHelpers.h" />
     <ClInclude Include="include\imgui_desktop\Window.h" />
+    <ClInclude Include="include\imgui_desktop\ScopeGuards.h" />
     <ClInclude Include="src\GLContext.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
