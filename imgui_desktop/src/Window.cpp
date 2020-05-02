@@ -99,6 +99,11 @@ void Window::QueueUpdate()
 	SDL_PushEvent(&event);
 }
 
+bool Window::HasFocus() const
+{
+	return SDL_GetWindowFlags(m_WindowImpl.get()) & (SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS);
+}
+
 void Window::OnUpdateInternal()
 {
 	auto scope = EnterGLScope();

@@ -20,6 +20,8 @@ namespace ImGuiDesktop
 		bool ShouldClose() const { return m_ShouldClose; }
 		void SetShouldClose(bool shouldClose = true) { m_ShouldClose = shouldClose; }
 
+		bool HasFocus() const;
+
 		void QueueUpdate();
 		void Update();
 
