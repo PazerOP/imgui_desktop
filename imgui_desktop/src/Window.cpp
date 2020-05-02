@@ -108,13 +108,19 @@ void Window::OnUpdateInternal()
 {
 	auto scope = EnterGLScope();
 
-	if (m_IsUpdateQueued || SDL_WaitEventTimeout(nullptr, int(m_SleepDuration * 1000)))
+	const auto windowFlags = SDL_GetWindowFlags(m_WindowImpl.get());
+	bool skipWait = m_IsUpdateQueued;// || HasFocus();
+
+	if (skipWait || SDL_WaitEventTimeout(nullptr, int(m_SleepDuration * 1000)))
 	{
 		m_IsUpdateQueued = false;
 
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
+			if (ImGui_ImplSDL2_ProcessEvent(&event))
+				continue;
+
 			bool shouldQueueWakeup = true;
 
 			switch (event.type)
