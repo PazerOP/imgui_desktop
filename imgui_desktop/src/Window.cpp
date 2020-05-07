@@ -65,6 +65,11 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 	style.WindowRounding = 0;
 }
 
+ImFontAtlas& Window::GetFontAtlas()
+{
+	return s_ImGuiFontAtlas;
+}
+
 auto Window::EnterGLScope()
 {
 	return GLContextScope(m_WindowImpl.get(), m_GLContext);
@@ -118,22 +123,22 @@ void Window::OnUpdateInternal()
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
-			if (ImGui_ImplSDL2_ProcessEvent(&event))
-				continue;
-
 			bool shouldQueueWakeup = true;
 
-			switch (event.type)
+			if (!ImGui_ImplSDL2_ProcessEvent(&event))
 			{
-			case SDL_QUIT:
-				SetShouldClose(true);
-				break;
+				switch (event.type)
+				{
+				case SDL_QUIT:
+					SetShouldClose(true);
+					break;
 
-			case SDL_USEREVENT:
-			{
-				if (event.user.code == (int)CustomWindowEventCodes::Wakeup)
-					shouldQueueWakeup = false;
-			}
+				case SDL_USEREVENT:
+				{
+					if (event.user.code == (int)CustomWindowEventCodes::Wakeup)
+						shouldQueueWakeup = false;
+				}
+				}
 			}
 
 			// Imgui has a lot of "measure, then update next frame" sort of stuff.

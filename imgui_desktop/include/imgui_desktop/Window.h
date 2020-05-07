@@ -5,6 +5,7 @@
 
 struct SDL_Window;
 struct ImGuiContext;
+struct ImFontAtlas;
 
 namespace ImGuiDesktop
 {
@@ -28,6 +29,8 @@ namespace ImGuiDesktop
 	protected:
 		virtual void OnUpdate() {}
 		virtual void OnDraw() = 0;
+
+		static ImFontAtlas& GetFontAtlas();
 
 	private:
 		void OnUpdateInternal();
