@@ -33,6 +33,8 @@ namespace ImGuiDesktop
 		virtual bool HasMenuBar() const { return false; }
 		virtual void OnDrawMenuBar() {}
 
+		virtual bool IsSleepingEnabled() const { return true; }
+
 		static ImFontAtlas& GetFontAtlas();
 
 	private:

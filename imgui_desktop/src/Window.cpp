@@ -114,7 +114,7 @@ void Window::OnUpdateInternal()
 	auto scope = EnterGLScope();
 
 	const auto windowFlags = SDL_GetWindowFlags(m_WindowImpl.get());
-	bool skipWait = m_IsUpdateQueued;// || HasFocus();
+	bool skipWait = m_IsUpdateQueued || !IsSleepingEnabled();// || HasFocus();
 
 	if (skipWait || SDL_WaitEventTimeout(nullptr, int(m_SleepDuration * 1000)))
 	{
