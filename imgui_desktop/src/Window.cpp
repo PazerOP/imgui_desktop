@@ -170,8 +170,23 @@ void Window::OnDrawInternal()
 		uint32_t windowW, windowH;
 		GetWindowSize(windowW, windowH);
 		ImGui::SetNextWindowSize(ImVec2(float(windowW), float(windowH)), ImGuiCond_Always);
-		if (ImGui::Begin("MainWindow", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration))
+
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration;
+		const bool hasMenuBar = HasMenuBar();
+		if (hasMenuBar)
+			windowFlags |= ImGuiWindowFlags_MenuBar;
+
+		if (ImGui::Begin("MainWindow", nullptr, windowFlags))
 		{
+			if (hasMenuBar)
+			{
+				if (ImGui::BeginMenuBar())
+				{
+					OnDrawMenuBar();
+					ImGui::EndMenuBar();
+				}
+			}
+
 			OnDraw();
 		}
 		ImGui::End();

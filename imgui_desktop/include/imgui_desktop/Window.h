@@ -30,6 +30,9 @@ namespace ImGuiDesktop
 		virtual void OnUpdate() {}
 		virtual void OnDraw() = 0;
 
+		virtual bool HasMenuBar() const { return false; }
+		virtual void OnDrawMenuBar() {}
+
 		static ImFontAtlas& GetFontAtlas();
 
 	private:
