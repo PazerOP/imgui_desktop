@@ -43,7 +43,7 @@ namespace ImGuiDesktop
 		bool m_IsUpdateQueued = false;
 		float m_SleepDuration = 0.1f;
 
-		auto EnterGLScope();
+		auto EnterGLScope() const;
 
 		struct CustomDeleters
 		{

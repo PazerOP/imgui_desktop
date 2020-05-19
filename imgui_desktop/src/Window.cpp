@@ -70,7 +70,7 @@ ImFontAtlas& Window::GetFontAtlas()
 	return s_ImGuiFontAtlas;
 }
 
-auto Window::EnterGLScope()
+auto Window::EnterGLScope() const
 {
 	return GLContextScope(m_WindowImpl.get(), m_GLContext);
 }
