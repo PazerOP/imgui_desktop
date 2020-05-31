@@ -54,6 +54,7 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 
 	m_ImGuiContext.reset(ImGui::CreateContext(&s_ImGuiFontAtlas));
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	ImGui::GetIO().IniFilename = nullptr; // Don't save stuff... for now
 	if (!ImGui_ImplOpenGL3_Init("#version 330 core"))
 		throw std::runtime_error("Failed to initialize ImGui OpenGL3 impl");
 	if (!ImGui_ImplSDL2_InitForOpenGL(m_WindowImpl.get(), m_GLContext.get()))

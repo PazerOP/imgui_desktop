@@ -29,7 +29,25 @@ StyleColor::StyleColor(ImGuiCol_ color, const ImVec4& value)
 	ImGui::PushStyleColor(color, value);
 }
 
+TextColor::TextColor(const ImVec4& color) :
+	StyleColor(ImGuiCol_Text, color)
+{
+}
+
 StyleColor::~StyleColor()
 {
 	ImGui::PopStyleColor();
+}
+
+GlobalAlpha::GlobalAlpha(float newAlpha) :
+	m_OldAlpha(ImGui::GetStyle().Alpha)
+{
+	auto& style = ImGui::GetStyle();
+	m_OldAlpha = style.Alpha;
+	style.Alpha = newAlpha;
+}
+
+GlobalAlpha::~GlobalAlpha()
+{
+	ImGui::GetStyle().Alpha = m_OldAlpha;
 }

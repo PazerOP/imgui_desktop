@@ -26,9 +26,23 @@ namespace ImGuiDesktop::ScopeGuards
 		~ID();
 	};
 
-	struct StyleColor final : detail::DisableCopyMove
+	struct StyleColor : detail::DisableCopyMove
 	{
 		StyleColor(ImGuiCol_ color, const ImVec4& value);
 		~StyleColor();
+	};
+
+	struct TextColor final : StyleColor
+	{
+		TextColor(const ImVec4& color);
+	};
+
+	struct GlobalAlpha final : detail::DisableCopyMove
+	{
+		explicit GlobalAlpha(float newAlpha);
+		~GlobalAlpha();
+
+	private:
+		float m_OldAlpha;
 	};
 }
