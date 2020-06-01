@@ -19,6 +19,10 @@ ID::ID(const char* str_id_begin, const char* str_id_end)
 	ImGui::PushID(str_id_begin, str_id_end);
 }
 
+ID::ID(const std::string_view& sv) : ID(sv.data(), sv.data() + sv.size())
+{
+}
+
 ID::~ID()
 {
 	ImGui::PopID();

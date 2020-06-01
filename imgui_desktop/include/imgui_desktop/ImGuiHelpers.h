@@ -4,7 +4,9 @@
 
 #define IM_VEC2_CLASS_EXTRA \
 	bool operator==(const ImVec2& other) const { return x == other.x && y == other.y; } \
-	bool operator!=(const ImVec2& other) const { return x != other.x || y != other.y; }
+	bool operator!=(const ImVec2& other) const { return x != other.x || y != other.y; } \
+	ImVec2 operator*(float s) const { return ImVec2(x * s, y * s); } \
+	ImVec2 operator+(const ImVec2& o) const { return ImVec2(x + o.x, y + o.y); }
 
 #define IM_VEC4_CLASS_EXTRA \
 	template<size_t N, typename = std::enable_if_t<N == 4>> \

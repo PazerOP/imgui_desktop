@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string_view>
+
 enum ImGuiCol_ : int;
 struct ImVec4;
 
@@ -23,6 +25,7 @@ namespace ImGuiDesktop::ScopeGuards
 		explicit ID(int int_id);
 		explicit ID(const void* ptr_id);
 		explicit ID(const char* str_id_begin, const char* str_id_end = nullptr);
+		explicit ID(const std::string_view& sv);
 		~ID();
 	};
 
