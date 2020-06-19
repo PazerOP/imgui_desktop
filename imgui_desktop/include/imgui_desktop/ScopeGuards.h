@@ -48,4 +48,13 @@ namespace ImGuiDesktop::ScopeGuards
 	private:
 		float m_OldAlpha;
 	};
+
+	struct Indent final : detail::DisableCopyMove
+	{
+		explicit Indent(unsigned count = 1);
+		~Indent();
+
+	private:
+		unsigned m_Count;
+	};
 }

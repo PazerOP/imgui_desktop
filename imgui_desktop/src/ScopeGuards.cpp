@@ -55,3 +55,15 @@ GlobalAlpha::~GlobalAlpha()
 {
 	ImGui::GetStyle().Alpha = m_OldAlpha;
 }
+
+Indent::Indent(unsigned count) :
+	m_Count(count)
+{
+	for (unsigned i = 0; i < count; i++)
+		ImGui::Indent();
+}
+Indent::~Indent()
+{
+	for (unsigned i = 0; i < m_Count; i++)
+		ImGui::Unindent();
+}
