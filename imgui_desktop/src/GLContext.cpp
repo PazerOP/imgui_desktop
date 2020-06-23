@@ -30,8 +30,8 @@ namespace
 				{
 					SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
 					SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
-					SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-					SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+					SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+					SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 					context = std::make_shared<GLContext>(std::shared_ptr<void>(SDL_GL_CreateContext(window), SDL_GLContextDeleter{}));
 					m_GLContext = context;
 				}

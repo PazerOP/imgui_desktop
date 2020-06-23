@@ -5,7 +5,7 @@
 #include <glbinding/gl33core/gl.h>
 #include <imgui.h>
 #include <examples/imgui_impl_sdl.h>
-#include <examples/imgui_impl_opengl3.h>
+#include <examples/imgui_impl_opengl2.h>
 #include <SDL.h>
 
 #include <stdexcept>
@@ -55,7 +55,7 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 	m_ImGuiContext.reset(ImGui::CreateContext(&s_ImGuiFontAtlas));
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	ImGui::GetIO().IniFilename = nullptr; // Don't save stuff... for now
-	if (!ImGui_ImplOpenGL3_Init("#version 330 core"))
+	if (!ImGui_ImplOpenGL2_Init())
 		throw std::runtime_error("Failed to initialize ImGui OpenGL3 impl");
 	if (!ImGui_ImplSDL2_InitForOpenGL(m_WindowImpl.get(), m_GLContext.get()))
 		throw std::runtime_error("Failed to initialize ImGui GLFW impl");
@@ -162,7 +162,7 @@ void Window::OnDrawInternal()
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplOpenGL2_NewFrame();
 	ImGui_ImplSDL2_NewFrame(m_WindowImpl.get());
 	ImGui::NewFrame();
 	{
@@ -194,7 +194,7 @@ void Window::OnDrawInternal()
 	}
 
 	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 
 	SDL_GL_SwapWindow(m_WindowImpl.get());
 }

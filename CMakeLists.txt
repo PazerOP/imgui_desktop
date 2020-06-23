@@ -12,8 +12,12 @@ add_library(imgui_desktop
 	imgui_desktop/include/imgui_desktop/ScopeGuards.h
 	imgui_desktop/src/Window.cpp
 	imgui_desktop/include/imgui_desktop/Window.h
-	imgui/repo/examples/imgui_impl_opengl3.cpp
+	imgui/repo/examples/imgui_impl_opengl2.cpp
+	imgui/repo/examples/imgui_impl_opengl2.h
+	# imgui/repo/examples/imgui_impl_opengl3.cpp
+	# imgui/repo/examples/imgui_impl_opengl3.h
 	imgui/repo/examples/imgui_impl_sdl.cpp
+	imgui/repo/examples/imgui_impl_sdl.h
 )
 
 find_package(SDL2 CONFIG REQUIRED)
