@@ -2,22 +2,22 @@ cmake_minimum_required(VERSION 3.0)
 
 project(imgui_desktop)
 
-add_subdirectory(imgui)
+include("imgui.cmake")
 
 add_library(imgui_desktop
-	imgui_desktop/include/imgui_desktop/ImGuiHelpers.h
-	imgui_desktop/src/GLContext.cpp
-	imgui_desktop/src/GLContext.h
-	imgui_desktop/src/ScopeGuards.cpp
-	imgui_desktop/include/imgui_desktop/ScopeGuards.h
-	imgui_desktop/src/Window.cpp
-	imgui_desktop/include/imgui_desktop/Window.h
-	imgui/repo/examples/imgui_impl_opengl2.cpp
-	imgui/repo/examples/imgui_impl_opengl2.h
-	# imgui/repo/examples/imgui_impl_opengl3.cpp
-	# imgui/repo/examples/imgui_impl_opengl3.h
-	imgui/repo/examples/imgui_impl_sdl.cpp
-	imgui/repo/examples/imgui_impl_sdl.h
+	"imgui_desktop/include/imgui_desktop/ImGuiHelpers.h"
+	"imgui_desktop/src/GLContext.cpp"
+	"imgui_desktop/src/GLContext.h"
+	"imgui_desktop/src/ScopeGuards.cpp"
+	"imgui_desktop/include/imgui_desktop/ScopeGuards.h"
+	"imgui_desktop/src/Window.cpp"
+	"imgui_desktop/include/imgui_desktop/Window.h"
+	"${imgui_SOURCE_DIR}/examples/imgui_impl_opengl2.cpp"
+	"${imgui_SOURCE_DIR}/examples/imgui_impl_opengl2.h"
+	# "${imgui_SOURCE_DIR}/examples/imgui_impl_opengl3.cpp"
+	# "${imgui_SOURCE_DIR}/examples/imgui_impl_opengl3.h"
+	"${imgui_SOURCE_DIR}/examples/imgui_impl_sdl.cpp"
+	"${imgui_SOURCE_DIR}/examples/imgui_impl_sdl.h"
 )
 
 find_package(SDL2 CONFIG REQUIRED)

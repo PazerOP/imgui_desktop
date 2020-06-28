@@ -1,3 +1,0 @@
-[submodule "imgui/repo"]
-	path = imgui/repo
-	url = https://github.com/PazerOP/imgui.git
