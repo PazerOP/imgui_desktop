@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.0)
 
 project(imgui_desktop)
 
-include(FetchContent)
-
 include("imgui.cmake")
 
 add_library(imgui_desktop

@@ -1,5 +1,7 @@
 project(imgui)
 
+include(FetchContent)
+
 FetchContent_Declare(imgui GIT_REPOSITORY https://github.com/PazerOP/imgui.git)
 if (NOT imgui_POPULATED)
 	FetchContent_MakeAvailable(imgui)
