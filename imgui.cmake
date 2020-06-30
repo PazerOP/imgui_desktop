@@ -2,10 +2,11 @@ project(imgui)
 
 include(FetchContent)
 
-FetchContent_Declare(imgui GIT_REPOSITORY https://github.com/PazerOP/imgui.git)
-if (NOT imgui_POPULATED)
-	FetchContent_MakeAvailable(imgui)
-endif()
+FetchContent_Declare(imgui
+	GIT_REPOSITORY https://github.com/PazerOP/imgui.git
+	GIT_SHALLOW true
+)
+FetchContent_MakeAvailable(imgui)
 
 add_library(imgui
 	"${imgui_SOURCE_DIR}/imconfig.h"
