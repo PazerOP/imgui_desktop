@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 project(imgui_desktop)
 
-include("imgui.cmake")
+add_subdirectory(submodules/imgui)
 
 add_library(imgui_desktop
 	"imgui_desktop/include/imgui_desktop/ImGuiHelpers.h"
@@ -12,18 +12,12 @@ add_library(imgui_desktop
 	"imgui_desktop/include/imgui_desktop/ScopeGuards.h"
 	"imgui_desktop/src/Window.cpp"
 	"imgui_desktop/include/imgui_desktop/Window.h"
-	"${imgui_SOURCE_DIR}/examples/imgui_impl_opengl2.cpp"
-	"${imgui_SOURCE_DIR}/examples/imgui_impl_opengl2.h"
-	# "${imgui_SOURCE_DIR}/examples/imgui_impl_opengl3.cpp"
-	# "${imgui_SOURCE_DIR}/examples/imgui_impl_opengl3.h"
-	"${imgui_SOURCE_DIR}/examples/imgui_impl_sdl.cpp"
-	"${imgui_SOURCE_DIR}/examples/imgui_impl_sdl.h"
 )
 
-find_package(SDL2 CONFIG REQUIRED)
-find_package(glbinding CONFIG REQUIRED)
-target_link_libraries(imgui_desktop SDL2::SDL2)
-target_link_libraries(imgui_desktop glbinding::glbinding)
+# find_package(SDL2 CONFIG REQUIRED)
+# find_package(glbinding CONFIG REQUIRED)
+# target_link_libraries(imgui_desktop SDL2::SDL2)
+# target_link_libraries(imgui_desktop glbinding::glbinding)
 
 set_property(TARGET imgui_desktop PROPERTY CXX_STANDARD 17)
 
