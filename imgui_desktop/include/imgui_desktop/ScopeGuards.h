@@ -31,13 +31,16 @@ namespace ImGuiDesktop::ScopeGuards
 
 	struct StyleColor : detail::DisableCopyMove
 	{
-		StyleColor(ImGuiCol_ color, const ImVec4& value);
+		StyleColor(ImGuiCol_ color, const ImVec4& value, bool enabled = true);
 		~StyleColor();
+
+	private:
+		bool m_Enabled = true;
 	};
 
 	struct TextColor final : StyleColor
 	{
-		TextColor(const ImVec4& color);
+		TextColor(const ImVec4& color, bool enabled = true);
 	};
 
 	struct GlobalAlpha final : detail::DisableCopyMove

@@ -28,19 +28,22 @@ ID::~ID()
 	ImGui::PopID();
 }
 
-StyleColor::StyleColor(ImGuiCol_ color, const ImVec4& value)
+StyleColor::StyleColor(ImGuiCol_ color, const ImVec4& value, bool enabled) :
+	m_Enabled(enabled)
 {
-	ImGui::PushStyleColor(color, value);
-}
-
-TextColor::TextColor(const ImVec4& color) :
-	StyleColor(ImGuiCol_Text, color)
-{
+	if (m_Enabled)
+		ImGui::PushStyleColor(color, value);
 }
 
 StyleColor::~StyleColor()
 {
-	ImGui::PopStyleColor();
+	if (m_Enabled)
+		ImGui::PopStyleColor();
+}
+
+TextColor::TextColor(const ImVec4& color, bool enabled) :
+	StyleColor(ImGuiCol_Text, color, enabled)
+{
 }
 
 GlobalAlpha::GlobalAlpha(float newAlpha) :
