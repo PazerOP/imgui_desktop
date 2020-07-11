@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GLContextVersion.h"
+
 #include <memory>
 #include <mutex>
 
@@ -10,7 +12,9 @@ namespace ImGuiDesktop
 	class GLContext
 	{
 	public:
-		GLContext(const std::shared_ptr<void>& context);
+		GLContext(const std::shared_ptr<void>& context, GLContextVersion version);
+
+		GLContextVersion GetVersion() const { return m_GLVersion; }
 
 	private:
 		friend class GLContextScope;
@@ -18,6 +22,8 @@ namespace ImGuiDesktop
 		std::shared_ptr<void> m_InnerContext;
 		std::recursive_mutex m_ActiveMutex;
 		int m_RecursionDepth = 0;
+
+		GLContextVersion m_GLVersion{};
 	};
 
 	std::shared_ptr<GLContext> GetOrCreateGLContext(SDL_Window* window);

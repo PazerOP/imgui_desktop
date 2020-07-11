@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GLContextVersion.h"
+
 #include <cstdint>
 #include <memory>
 
@@ -25,6 +27,8 @@ namespace ImGuiDesktop
 
 		void QueueUpdate();
 		void Update();
+
+		GLContextVersion GetGLContextVersion() const;
 
 	protected:
 		virtual void OnUpdate() {}
