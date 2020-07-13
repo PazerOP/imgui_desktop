@@ -61,7 +61,7 @@ static void PrintLogMsg(const char* msg)
 	PrintLogMsg(std::string_view(msg));
 }
 
-static void DebugCallbackFn(GLenum source, GLenum type, GLuint id,
+static void GL_APIENTRY DebugCallbackFn(GLenum source, GLenum type, GLuint id,
 	GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
 	// These get sent even when using the ARB extension on nvidia drivers
@@ -98,7 +98,7 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 
 	if (extensions.contains(gl::GLextension::GL_KHR_debug))
 	{
-		gl20ext::glDebugMessageCallback(DebugCallbackFn, nullptr);
+		gl20ext::glDebugMessageCallback(&DebugCallbackFn, nullptr);
 		gl20ext::glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, gl20ext::GL_DEBUG_SEVERITY_LOW, 0, nullptr, GL_FALSE);
 		gl20ext::glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, gl20ext::GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
 		gl::glEnable(gl43core::GL_DEBUG_OUTPUT);
