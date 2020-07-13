@@ -101,7 +101,8 @@ static void ValidateDriver()
 
 			auto errMsg = "The Intel driver version "s << std::quoted(driverVersion)
 				<< " has severe bugs that make it incompatible with this program."
-				" You should consider upgrading to 27.20.100.8425 or downgrading to 27.20.100.8190.";
+				"\n\nYou must upgrade to 27.20.100.8425 or downgrade to 27.20.100.8190 before using this tool.";
+
 			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Unsupported driver version",
 				errMsg.c_str(), nullptr);
 
