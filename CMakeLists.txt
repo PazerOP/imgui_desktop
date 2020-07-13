@@ -21,10 +21,10 @@ add_library(imgui_desktop
 
 find_package(SDL2 CONFIG REQUIRED)
 # find_package(glbinding CONFIG REQUIRED)
-target_link_libraries(imgui_desktop SDL2::SDL2)
+target_link_libraries(imgui_desktop SDL2::SDL2 mh_stuff)
 # target_link_libraries(imgui_desktop glbinding::glbinding)
 
-set_property(TARGET imgui_desktop PROPERTY CXX_STANDARD 17)
+set_property(TARGET imgui_desktop PROPERTY CXX_STANDARD 20)
 
 target_link_libraries(imgui_desktop imgui)
 target_include_directories(imgui_desktop PRIVATE imgui_desktop/include/imgui_desktop)

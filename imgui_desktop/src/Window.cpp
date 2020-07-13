@@ -2,17 +2,25 @@
 #include "GLContext.h"
 
 #include <glbinding/glbinding.h>
+#include <glbinding/gl/extension.h>
 #include <glbinding/gl33core/gl.h>
+#include <glbinding/gl43core/gl.h>
+#include <glbinding/gl20ext/gl.h>
+#include <glbinding-aux/ContextInfo.h>
+#include <glbinding-aux/types_to_string.h>
 #include <imgui.h>
 #include <examples/imgui_impl_sdl.h>
 #include <examples/imgui_impl_opengl2.h>
 #include <examples/imgui_impl_opengl3.h>
+#include <mh/text/string_insertion.hpp>
 #include <SDL.h>
 
+#include <sstream>
 #include <stdexcept>
 
 using namespace ImGuiDesktop;
 using namespace gl33core;
+using namespace std::string_literals;
 
 namespace
 {
@@ -37,6 +45,41 @@ namespace
 	}();
 }
 
+static std::function<void(const std::string_view&)> s_LogFunc;
+void ImGuiDesktop::SetLogFunction(std::function<void(const std::string_view&)> func)
+{
+	s_LogFunc = func;
+}
+
+static void PrintLogMsg(const std::string_view& msg)
+{
+	if (s_LogFunc)
+		s_LogFunc(msg);
+}
+static void PrintLogMsg(const char* msg)
+{
+	PrintLogMsg(std::string_view(msg));
+}
+
+static void DebugCallbackFn(GLenum source, GLenum type, GLuint id,
+	GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+{
+	// These get sent even when using the ARB extension on nvidia drivers
+	if (severity == gl20ext::GL_DEBUG_SEVERITY_NOTIFICATION)
+		return;
+
+	std::stringstream ss;
+
+	ss << "OpenGL Error:"
+		<< "\n\tSource   : " << source
+		<< "\n\tType     : " << type
+		<< "\n\tID       : " << id
+		<< "\n\tSeverity : " << severity
+		<< "\n\tMessage  : " << message;
+
+	PrintLogMsg(ss.str());
+}
+
 Window::Window(uint32_t width, uint32_t height, const char* title)
 {
 	SDL_Init(SDL_INIT_VIDEO);
@@ -50,6 +93,27 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 
 	GLContextScope glScope(m_WindowImpl.get(), m_GLContext);
 	glbinding::initialize([](const char* fn) { return reinterpret_cast<glbinding::ProcAddress>(SDL_GL_GetProcAddress(fn)); });
+
+	const auto extensions = glbinding::aux::ContextInfo::extensions();
+
+	if (extensions.contains(gl::GLextension::GL_KHR_debug))
+	{
+		gl20ext::glDebugMessageCallback(DebugCallbackFn, nullptr);
+		gl20ext::glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, gl20ext::GL_DEBUG_SEVERITY_LOW, 0, nullptr, GL_FALSE);
+		gl20ext::glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, gl20ext::GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
+		gl::glEnable(gl43core::GL_DEBUG_OUTPUT);
+		PrintLogMsg("Installed GL_KHR_debug debug message callback.");
+	}
+	else if (extensions.contains(gl::GLextension::GL_ARB_debug_output))
+	{
+		gl20ext::glDebugMessageCallbackARB(&DebugCallbackFn, nullptr);
+		gl20ext::glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, gl20ext::GL_DEBUG_SEVERITY_LOW_ARB, 0, nullptr, GL_FALSE);
+		PrintLogMsg("Installed GL_ARB_debug_output debug message callback.");
+	}
+	else
+	{
+		PrintLogMsg("No OpenGL debug message callback supported (context version "s << GetGLContextVersion() << ')');
+	}
 
 	SDL_GL_SetSwapInterval(1);
 

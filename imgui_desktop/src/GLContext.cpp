@@ -32,11 +32,25 @@ namespace
 					SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
 					SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
 
+					constexpr GLContextVersion VERSION_4(4, 3);
 					constexpr GLContextVersion VERSION_3(3, 2);
 					constexpr GLContextVersion VERSION_2(2, 0);
 
-					// Try OpenGL 3
+					SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+
+					// Try OpenGL 4
 					{
+						SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_4.m_Major);
+						SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_4.m_Minor);
+						SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+						context = std::make_shared<GLContext>(
+							std::shared_ptr<void>(SDL_GL_CreateContext(window), SDL_GLContextDeleter{}),
+							VERSION_4);
+					}
+
+					if (!context)
+					{
+						// Try OpenGL 3
 						SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_3.m_Major);
 						SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_3.m_Minor);
 						SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -59,7 +73,9 @@ namespace
 					{
 						// Neither worked, show an error and quit
 						std::stringstream ss;
-						ss << "Failed to initialize OpenGL " << VERSION_3 << " or OpenGL " << VERSION_2
+						ss << "Failed to initialize OpenGL " << VERSION_4
+							<< ", OpenGL " << VERSION_3
+							<< ", or OpenGL " << VERSION_2
 							<< ". Unfortunately, this means your computer is too old to run this software.";
 
 						SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "OpenGL Initialization Failed",

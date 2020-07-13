@@ -1,5 +1,6 @@
 #pragma once
 
+#include <compare>
 #include <ostream>
 
 namespace ImGuiDesktop
@@ -11,6 +12,8 @@ namespace ImGuiDesktop
 			m_Major(major), m_Minor(minor)
 		{
 		}
+
+		constexpr auto operator<=>(const GLContextVersion&) const = default;
 
 		int m_Major = -1;
 		int m_Minor = -1;

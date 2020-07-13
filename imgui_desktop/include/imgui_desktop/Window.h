@@ -3,6 +3,7 @@
 #include "GLContextVersion.h"
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 
 struct SDL_Window;
@@ -11,6 +12,8 @@ struct ImFontAtlas;
 
 namespace ImGuiDesktop
 {
+	void SetLogFunction(std::function<void(const std::string_view&)> func);
+
 	class GLContext;
 
 	class Window
