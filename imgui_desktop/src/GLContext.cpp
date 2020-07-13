@@ -7,6 +7,10 @@
 
 using namespace ImGuiDesktop;
 
+#define SDL_TRY_SET_ATTR(func) \
+	if (auto result = func; result != 0) \
+		assert(!"Failed to run " #func);
+
 namespace
 {
 	struct SDL_GLContextDeleter
@@ -29,20 +33,24 @@ namespace
 				context = m_GLContext.lock();
 				if (!context)
 				{
-					SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
-					SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+					SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8));
+					SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8));
+					SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8));
+					SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0));
+					SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0));
+					SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0));
 
 					constexpr GLContextVersion VERSION_4(4, 3);
 					constexpr GLContextVersion VERSION_3(3, 2);
 					constexpr GLContextVersion VERSION_2(2, 0);
 
-					SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+					SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG));
 
 					// Try OpenGL 4
 					{
-						SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_4.m_Major);
-						SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_4.m_Minor);
-						SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_4.m_Major));
+						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_4.m_Minor));
+						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
 						context = std::make_shared<GLContext>(
 							std::shared_ptr<void>(SDL_GL_CreateContext(window), SDL_GLContextDeleter{}),
 							VERSION_4);
@@ -51,9 +59,9 @@ namespace
 					if (!context)
 					{
 						// Try OpenGL 3
-						SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_3.m_Major);
-						SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_3.m_Minor);
-						SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_3.m_Major));
+						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_3.m_Minor));
+						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
 						context = std::make_shared<GLContext>(
 							std::shared_ptr<void>(SDL_GL_CreateContext(window), SDL_GLContextDeleter{}),
 							VERSION_3);
@@ -62,8 +70,8 @@ namespace
 					if (!context)
 					{
 						// Try OpenGL 2
-						SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_2.m_Major);
-						SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_2.m_Minor);
+						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_2.m_Major));
+						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_2.m_Minor));
 						context = std::make_shared<GLContext>(
 							std::shared_ptr<void>(SDL_GL_CreateContext(window), SDL_GLContextDeleter{}),
 							VERSION_2);
