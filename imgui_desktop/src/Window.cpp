@@ -15,6 +15,7 @@
 #include <mh/text/string_insertion.hpp>
 #include <SDL.h>
 
+#include <iomanip>
 #include <sstream>
 #include <stdexcept>
 
@@ -80,6 +81,35 @@ static void GL_APIENTRY DebugCallbackFn(GLenum source, GLenum type, GLuint id,
 	PrintLogMsg(ss.str());
 }
 
+static void ValidateDriver()
+{
+	const char* vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+	if (!stricmp("Intel", vendor))
+	{
+		static constexpr const char* BAD_DRIVER_VERSIONS[] =
+		{
+			"Build 27.20.100.8336",
+			"Build 27.20.100.8280",
+		};
+
+		const char* driverVersion = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+
+		for (auto& badVersion : BAD_DRIVER_VERSIONS)
+		{
+			if (!strstr(driverVersion, badVersion))
+				continue;
+
+			auto errMsg = "The Intel driver version "s << std::quoted(driverVersion)
+				<< " has severe bugs that make it incompatible with this program."
+				" You should consider upgrading to 27.20.100.8425 or downgrading to 27.20.100.8190.";
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Unsupported driver version",
+				errMsg.c_str(), nullptr);
+
+			std::exit(1);
+		}
+	}
+}
+
 Window::Window(uint32_t width, uint32_t height, const char* title)
 {
 	SDL_Init(SDL_INIT_VIDEO);
@@ -93,6 +123,8 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 
 	GLContextScope glScope(m_WindowImpl.get(), m_GLContext);
 	glbinding::initialize([](const char* fn) { return reinterpret_cast<glbinding::ProcAddress>(SDL_GL_GetProcAddress(fn)); });
+
+	ValidateDriver();
 
 	const auto extensions = glbinding::aux::ContextInfo::extensions();
 
@@ -234,8 +266,10 @@ void Window::OnDrawInternal()
 	glbinding::useCurrentContext();
 	ImGui::SetCurrentContext(m_ImGuiContext.get());
 
+	glClearStencil(0);
+	glClearDepth(1.0f);
 	glClearColor(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	if (GetGLContextVersion().m_Major >= 3)
 		ImGui_ImplOpenGL3_NewFrame();
