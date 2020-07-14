@@ -1,5 +1,6 @@
 #include "Window.h"
 #include "GLContext.h"
+#include "ImGuiDesktopInternal.h"
 
 #include <glbinding/glbinding.h>
 #include <glbinding/gl/extension.h>
@@ -52,12 +53,12 @@ void ImGuiDesktop::SetLogFunction(std::function<void(const std::string_view&)> f
 	s_LogFunc = func;
 }
 
-static void PrintLogMsg(const std::string_view& msg)
+void ImGuiDesktop::PrintLogMsg(const std::string_view& msg)
 {
 	if (s_LogFunc)
 		s_LogFunc(msg);
 }
-static void PrintLogMsg(const char* msg)
+void ImGuiDesktop::PrintLogMsg(const char* msg)
 {
 	PrintLogMsg(std::string_view(msg));
 }
@@ -84,6 +85,12 @@ static void GL_APIENTRY DebugCallbackFn(GLenum source, GLenum type, GLuint id,
 static void ValidateDriver()
 {
 	const char* vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+	const char* renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+	const char* driverVersion = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+	PrintLogMsg("GL_VENDOR =   "s << (vendor ? vendor : "<nullptr>"));
+	PrintLogMsg("GL_RENDERER = "s << (renderer ? renderer : "<nullptr>"));
+	PrintLogMsg("GL_VERSION =  "s << (driverVersion ? driverVersion : "<nullptr>"));
+
 	if (!stricmp("Intel", vendor))
 	{
 		static constexpr const char* BAD_DRIVER_VERSIONS[] =
@@ -91,8 +98,6 @@ static void ValidateDriver()
 			"Build 27.20.100.8336",
 			"Build 27.20.100.8280",
 		};
-
-		const char* driverVersion = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 
 		for (auto& badVersion : BAD_DRIVER_VERSIONS)
 		{
@@ -129,8 +134,7 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 
 	const auto extensions = glbinding::aux::ContextInfo::extensions();
 
-	if (GetGLContextVersion() >= GLContextVersion{ 4, 3 } ||
-		extensions.contains(gl::GLextension::GL_KHR_debug))
+	if (extensions.contains(gl::GLextension::GL_KHR_debug))
 	{
 		gl20ext::glDebugMessageCallback(&DebugCallbackFn, nullptr);
 		gl20ext::glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, gl20ext::GL_DEBUG_SEVERITY_LOW, 0, nullptr, GL_FALSE);

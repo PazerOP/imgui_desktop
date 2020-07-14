@@ -17,6 +17,7 @@ add_library(imgui_desktop
 	"imgui_desktop/include/imgui_desktop/ScopeGuards.h"
 	"imgui_desktop/src/Window.cpp"
 	"imgui_desktop/include/imgui_desktop/Window.h"
+	"imgui_desktop/src/ImGuiDesktopInternal.h"
 )
 
 find_package(SDL2 CONFIG REQUIRED)

@@ -1,4 +1,5 @@
 #include "GLContext.h"
+#include "ImGuiDesktopInternal.h"
 
 #include <SDL.h>
 
@@ -6,10 +7,14 @@
 #include <sstream>
 
 using namespace ImGuiDesktop;
+using namespace std::string_literals;
 
 #define SDL_TRY_SET_ATTR(func) \
 	if (auto result = func; result != 0) \
-		assert(!"Failed to run " #func);
+	{ \
+		SDL_PRINT_AND_CLEAR_ERROR(); \
+		assert(!"Failed to run " #func); \
+	}
 
 namespace
 {
@@ -48,33 +53,45 @@ namespace
 
 					// Try OpenGL 4
 					{
+						PrintLogMsg("Initializing OpenGL "s << VERSION_4 << "...");
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_4.m_Major));
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_4.m_Minor));
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
 						context = std::make_shared<GLContext>(
 							std::shared_ptr<void>(SDL_GL_CreateContext(window), SDL_GLContextDeleter{}),
 							VERSION_4);
+
+						if (!SDL_PRINT_AND_CLEAR_ERROR())
+							context.reset();
 					}
 
 					if (!context)
 					{
 						// Try OpenGL 3
+						PrintLogMsg("Initializing OpenGL "s << VERSION_3 << "...");
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_3.m_Major));
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_3.m_Minor));
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
 						context = std::make_shared<GLContext>(
 							std::shared_ptr<void>(SDL_GL_CreateContext(window), SDL_GLContextDeleter{}),
 							VERSION_3);
+
+						if (!SDL_PRINT_AND_CLEAR_ERROR())
+							context.reset();
 					}
 
 					if (!context)
 					{
 						// Try OpenGL 2
+						PrintLogMsg("Initializing OpenGL "s << VERSION_2 << "...");
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_2.m_Major));
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_2.m_Minor));
 						context = std::make_shared<GLContext>(
 							std::shared_ptr<void>(SDL_GL_CreateContext(window), SDL_GLContextDeleter{}),
 							VERSION_2);
+
+						if (!SDL_PRINT_AND_CLEAR_ERROR())
+							context.reset();
 					}
 
 					if (!context)
