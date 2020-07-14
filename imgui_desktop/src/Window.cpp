@@ -129,7 +129,8 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 
 	const auto extensions = glbinding::aux::ContextInfo::extensions();
 
-	if (extensions.contains(gl::GLextension::GL_KHR_debug))
+	if (GetGLContextVersion() >= GLContextVersion{ 4, 3 } ||
+		extensions.contains(gl::GLextension::GL_KHR_debug))
 	{
 		gl20ext::glDebugMessageCallback(&DebugCallbackFn, nullptr);
 		gl20ext::glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, gl20ext::GL_DEBUG_SEVERITY_LOW, 0, nullptr, GL_FALSE);
