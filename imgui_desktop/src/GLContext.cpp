@@ -86,6 +86,11 @@ namespace
 						PrintLogMsg("Initializing OpenGL "s << VERSION_2 << "...");
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_2.m_Major));
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_2.m_Minor));
+
+						// These must be set back to zero for legacy context creation
+						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0));
+						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0));
+
 						context = std::make_shared<GLContext>(
 							std::shared_ptr<void>(SDL_GL_CreateContext(window), SDL_GLContextDeleter{}),
 							VERSION_2);
