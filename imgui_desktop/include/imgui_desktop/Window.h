@@ -2,6 +2,7 @@
 
 #include "GLContextVersion.h"
 
+#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -33,6 +34,8 @@ namespace ImGuiDesktop
 
 		GLContextVersion GetGLContextVersion() const;
 
+		float GetFPS() const { return m_FPS; }
+
 	protected:
 		virtual void OnUpdate() {}
 		virtual void OnDraw() = 0;
@@ -51,6 +54,8 @@ namespace ImGuiDesktop
 		bool m_ShouldClose = false;
 		bool m_IsUpdateQueued = false;
 		float m_SleepDuration = 0.1f;
+		float m_FPS = (1.0f / 60);
+		std::chrono::high_resolution_clock::time_point m_LastUpdate{};
 
 		auto EnterGLScope() const;
 

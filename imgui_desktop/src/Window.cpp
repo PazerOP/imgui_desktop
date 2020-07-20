@@ -13,6 +13,7 @@
 #include <examples/imgui_impl_sdl.h>
 #include <examples/imgui_impl_opengl2.h>
 #include <examples/imgui_impl_opengl3.h>
+#include <mh/math/interpolation.hpp>
 #include <mh/text/string_insertion.hpp>
 #include <SDL.h>
 
@@ -267,6 +268,24 @@ void Window::OnUpdateInternal()
 
 void Window::OnDrawInternal()
 {
+	// Update FPS
+	{
+		using hrc = std::chrono::high_resolution_clock;
+		const auto now = hrc::now();
+		if (m_LastUpdate != hrc::time_point{})
+		{
+			const auto delta = now - m_LastUpdate;
+			const auto deltaSeconds = std::chrono::duration_cast<std::chrono::duration<float>>(delta).count();
+
+			if (deltaSeconds <= 0 || deltaSeconds >= 1)
+				m_FPS = 1;
+			else
+				m_FPS = mh::lerp(deltaSeconds, m_FPS, (1 / deltaSeconds));
+		}
+
+		m_LastUpdate = now;
+	}
+
 	auto scope = EnterGLScope();
 
 	glbinding::useCurrentContext();
