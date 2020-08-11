@@ -39,6 +39,7 @@ namespace ImGuiDesktop
 	protected:
 		virtual void OnUpdate() {}
 		virtual void OnDraw() = 0;
+		virtual void OnEndFrame() {}
 
 		virtual bool HasMenuBar() const { return false; }
 		virtual void OnDrawMenuBar() {}

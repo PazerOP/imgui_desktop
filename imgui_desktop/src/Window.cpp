@@ -339,6 +339,7 @@ void Window::OnDrawInternal()
 		ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 
 	SDL_GL_SwapWindow(m_WindowImpl.get());
+	OnEndFrame();
 }
 
 void Window::CustomDeleters::operator()(SDL_Window* window) const
