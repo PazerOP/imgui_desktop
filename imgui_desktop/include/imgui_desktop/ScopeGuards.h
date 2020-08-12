@@ -9,14 +9,21 @@ namespace ImGuiDesktop::ScopeGuards
 {
 	namespace detail
 	{
-		struct DisableCopyMove
+		struct DisableCopy
 		{
-			DisableCopyMove() = default;
-			DisableCopyMove(const DisableCopyMove&) = delete;
-			DisableCopyMove(DisableCopyMove&&) = delete;
-			DisableCopyMove& operator=(const DisableCopyMove&) = delete;
-			DisableCopyMove& operator=(DisableCopyMove&&) = delete;
+			DisableCopy() = default;
+			DisableCopy(const DisableCopy&) = delete;
+			DisableCopy& operator=(const DisableCopy&) = delete;
 		};
+
+		struct DisableMove
+		{
+			DisableMove() = default;
+			DisableMove(DisableMove&&) = delete;
+			DisableMove& operator=(DisableMove&&) = delete;
+		};
+
+		struct DisableCopyMove : DisableCopy, DisableMove {};
 	}
 
 	struct ID final : detail::DisableCopyMove
@@ -29,10 +36,14 @@ namespace ImGuiDesktop::ScopeGuards
 		~ID();
 	};
 
-	struct StyleColor : detail::DisableCopyMove
+	struct StyleColor : detail::DisableCopy
 	{
+		StyleColor() : m_Enabled(false) {}
 		StyleColor(ImGuiCol_ color, const ImVec4& value, bool enabled = true);
 		~StyleColor();
+
+		StyleColor(StyleColor&& other);
+		StyleColor& operator=(StyleColor&& other);
 
 	private:
 		bool m_Enabled = true;

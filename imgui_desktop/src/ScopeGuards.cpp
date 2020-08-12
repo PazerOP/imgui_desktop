@@ -41,6 +41,21 @@ StyleColor::~StyleColor()
 		ImGui::PopStyleColor();
 }
 
+StyleColor::StyleColor(StyleColor&& other) :
+	m_Enabled(other.m_Enabled)
+{
+	other.m_Enabled = false;
+}
+StyleColor& StyleColor::operator=(StyleColor&& other)
+{
+	if (m_Enabled)
+		ImGui::PopStyleColor();
+
+	m_Enabled = other.m_Enabled;
+	other.m_Enabled = false;
+	return *this;
+}
+
 TextColor::TextColor(const ImVec4& color, bool enabled) :
 	StyleColor(ImGuiCol_Text, color, enabled)
 {
