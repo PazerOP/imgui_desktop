@@ -92,7 +92,7 @@ static void ValidateDriver()
 	PrintLogMsg("GL_RENDERER = "s << (renderer ? renderer : "<nullptr>"));
 	PrintLogMsg("GL_VERSION =  "s << (driverVersion ? driverVersion : "<nullptr>"));
 
-	if (!stricmp("Intel", vendor))
+	if (!_stricmp("Intel", vendor))
 	{
 		static constexpr const char* BAD_DRIVER_VERSIONS[] =
 		{
