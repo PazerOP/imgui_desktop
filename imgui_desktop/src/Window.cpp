@@ -14,7 +14,7 @@
 #include <examples/imgui_impl_opengl2.h>
 #include <examples/imgui_impl_opengl3.h>
 #include <mh/math/interpolation.hpp>
-#include <mh/text/string_insertion.hpp>
+#include <mh/text/format.hpp>
 #include <SDL.h>
 
 #include <iomanip>
@@ -151,7 +151,7 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 	}
 	else
 	{
-		PrintLogMsg("No OpenGL debug message callback supported (context version "s << GetGLContextVersion() << ')');
+		PrintLogMsg(mh::format("No OpenGL debug message callback supported (context version {})", GetGLContextVersion()));
 	}
 
 	SDL_GL_SetSwapInterval(1);

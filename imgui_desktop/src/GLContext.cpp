@@ -1,6 +1,7 @@
 #include "GLContext.h"
 #include "ImGuiDesktopInternal.h"
 
+#include <mh/text/format.hpp>
 #include <SDL.h>
 
 #include <cassert>
@@ -53,7 +54,7 @@ namespace
 
 					// Try OpenGL 4
 					{
-						PrintLogMsg("Initializing OpenGL "s << VERSION_4 << "...");
+						PrintLogMsg(mh::format("Initializing OpenGL {}...", VERSION_4));
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_4.m_Major));
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_4.m_Minor));
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
@@ -68,7 +69,7 @@ namespace
 					if (!context)
 					{
 						// Try OpenGL 3
-						PrintLogMsg("Initializing OpenGL "s << VERSION_3 << "...");
+						PrintLogMsg(mh::format("Initializing OpenGL {}...", VERSION_3));
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_3.m_Major));
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_3.m_Minor));
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
@@ -83,7 +84,7 @@ namespace
 					if (!context)
 					{
 						// Try OpenGL 2
-						PrintLogMsg("Initializing OpenGL "s << VERSION_2 << "...");
+						PrintLogMsg(mh::format("Initializing OpenGL {}...", VERSION_2));
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, VERSION_2.m_Major));
 						SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, VERSION_2.m_Minor));
 
