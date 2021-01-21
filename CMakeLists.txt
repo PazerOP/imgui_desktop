@@ -15,6 +15,7 @@ add_library(imgui_desktop
 	"imgui_desktop/include/imgui_desktop/GLContextVersion.h"
 	"imgui_desktop/src/ScopeGuards.cpp"
 	"imgui_desktop/include/imgui_desktop/ScopeGuards.h"
+	"imgui_desktop/include/imgui_desktop/StorageHelper.h"
 	"imgui_desktop/src/Window.cpp"
 	"imgui_desktop/include/imgui_desktop/Window.h"
 	"imgui_desktop/src/ImGuiDesktopInternal.h"
