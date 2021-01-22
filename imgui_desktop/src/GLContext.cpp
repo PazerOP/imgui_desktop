@@ -52,6 +52,7 @@ namespace
 
 					SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG));
 
+#ifdef IMGUI_USE_OPENGL3
 					// Try OpenGL 4
 					{
 						PrintLogMsg(mh::format("Initializing OpenGL {}...", VERSION_4));
@@ -80,6 +81,7 @@ namespace
 						if (!SDL_PRINT_AND_CLEAR_ERROR())
 							context.reset();
 					}
+#endif
 
 					if (!context)
 					{

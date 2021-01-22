@@ -10,12 +10,17 @@
 #include <glbinding-aux/ContextInfo.h>
 #include <glbinding-aux/types_to_string.h>
 #include <imgui.h>
-#include <examples/imgui_impl_sdl.h>
-#include <examples/imgui_impl_opengl2.h>
-#include <examples/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_sdl.h>
 #include <mh/math/interpolation.hpp>
 #include <mh/text/format.hpp>
 #include <SDL.h>
+
+#ifdef IMGUI_USE_OPENGL3
+#include <backends/imgui_impl_opengl3.h>
+#endif
+#ifdef IMGUI_USE_OPENGL2
+#include <backends/imgui_impl_opengl2.h>
+#endif
 
 #include <iomanip>
 #include <sstream>
@@ -160,12 +165,14 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	ImGui::GetIO().IniFilename = nullptr; // Don't save stuff... for now
 
+#ifdef IMGUI_USE_OPENGL3
 	if (GetGLContextVersion().m_Major >= 3)
 	{
 		if (!ImGui_ImplOpenGL3_Init())
 			throw std::runtime_error("Failed to initialize ImGui OpenGL3 impl");
 	}
 	else
+#endif
 	{
 		if (!ImGui_ImplOpenGL2_Init())
 			throw std::runtime_error("Failed to initialize ImGui OpenGL2 impl");
@@ -296,9 +303,11 @@ void Window::OnDrawInternal()
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+#ifdef IMGUI_USE_OPENGL3
 	if (GetGLContextVersion().m_Major >= 3)
 		ImGui_ImplOpenGL3_NewFrame();
 	else
+#endif
 		ImGui_ImplOpenGL2_NewFrame();
 
 	ImGui_ImplSDL2_NewFrame(m_WindowImpl.get());
@@ -333,9 +342,11 @@ void Window::OnDrawInternal()
 
 	ImGui::Render();
 
+#ifdef IMGUI_USE_OPENGL3
 	if (GetGLContextVersion().m_Major >= 3)
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	else
+#endif
 		ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 
 	SDL_GL_SwapWindow(m_WindowImpl.get());
