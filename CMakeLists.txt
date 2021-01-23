@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.0)
 project(imgui_desktop)
 
 set(imgui_USE_OPENGL2 on)
-set(imgui_USE_OPENGL3 on)
-set(imgui_USE_GLBINDING on)
+# set(imgui_USE_OPENGL3 on)
+# set(imgui_USE_GLBINDING on)
 set(imgui_USE_SDL2 on)
 add_subdirectory(submodules/imgui)
 

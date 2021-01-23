@@ -2,6 +2,7 @@
 #include "GLContext.h"
 #include "ImGuiDesktopInternal.h"
 
+#ifdef IMGUI_USE_GLBINDING
 #include <glbinding/glbinding.h>
 #include <glbinding/gl/extension.h>
 #include <glbinding/gl33core/gl.h>
@@ -9,11 +10,22 @@
 #include <glbinding/gl20ext/gl.h>
 #include <glbinding-aux/ContextInfo.h>
 #include <glbinding-aux/types_to_string.h>
+using namespace gl33core;
+#else
+#ifdef WIN32
+#include <Windows.h>
+#endif
+#include <gl/GL.h>
+#endif
+
 #include <imgui.h>
-#include <backends/imgui_impl_sdl.h>
 #include <mh/math/interpolation.hpp>
 #include <mh/text/format.hpp>
+
+#ifdef IMGUI_USE_SDL2
+#include <backends/imgui_impl_sdl.h>
 #include <SDL.h>
+#endif
 
 #ifdef IMGUI_USE_OPENGL3
 #include <backends/imgui_impl_opengl3.h>
@@ -27,7 +39,6 @@
 #include <stdexcept>
 
 using namespace ImGuiDesktop;
-using namespace gl33core;
 using namespace std::string_literals;
 
 namespace
@@ -69,6 +80,7 @@ void ImGuiDesktop::PrintLogMsg(const char* msg)
 	PrintLogMsg(std::string_view(msg));
 }
 
+#ifdef IMGUI_USE_GLBINDING
 static void GL_APIENTRY DebugCallbackFn(GLenum source, GLenum type, GLuint id,
 	GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
@@ -87,6 +99,7 @@ static void GL_APIENTRY DebugCallbackFn(GLenum source, GLenum type, GLuint id,
 
 	PrintLogMsg(ss.str());
 }
+#endif
 
 static void ValidateDriver()
 {
@@ -134,10 +147,14 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 	m_GLContext = GetOrCreateGLContext(m_WindowImpl.get());
 
 	GLContextScope glScope(m_WindowImpl.get(), m_GLContext);
+
+#ifdef IMGUI_USE_GLBINDING
 	glbinding::initialize([](const char* fn) { return reinterpret_cast<glbinding::ProcAddress>(SDL_GL_GetProcAddress(fn)); });
+#endif
 
 	ValidateDriver();
 
+#ifdef IMGUI_USE_GLBINDING
 	const auto extensions = glbinding::aux::ContextInfo::extensions();
 
 	if (extensions.contains(gl::GLextension::GL_KHR_debug))
@@ -155,6 +172,7 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 		PrintLogMsg("Installed GL_ARB_debug_output debug message callback.");
 	}
 	else
+#endif
 	{
 		PrintLogMsg(mh::format("No OpenGL debug message callback supported (context version {})", GetGLContextVersion()));
 	}
@@ -295,7 +313,9 @@ void Window::OnDrawInternal()
 
 	auto scope = EnterGLScope();
 
+#ifdef IMGUI_USE_GLBINDING
 	glbinding::useCurrentContext();
+#endif
 	ImGui::SetCurrentContext(m_ImGuiContext.get());
 
 	glClearStencil(0);
