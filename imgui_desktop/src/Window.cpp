@@ -198,11 +198,6 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 
 	if (!ImGui_ImplSDL2_InitForOpenGL(m_WindowImpl.get(), m_GLContext.get()))
 		throw std::runtime_error("Failed to initialize ImGui GLFW impl");
-
-	ImGuiStyle& style = ImGui::GetStyle();
-	style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-	style.WindowBorderSize = 0;
-	style.WindowRounding = 0;
 }
 
 ImFontAtlas& Window::GetFontAtlas()
@@ -344,8 +339,21 @@ void Window::OnDrawInternal()
 		if (hasMenuBar)
 			windowFlags |= ImGuiWindowFlags_MenuBar;
 
+		ImGuiStyle& style = ImGui::GetStyle();
+		const auto backupWindowBg = style.Colors[ImGuiCol_WindowBg];
+		const auto backupWindowBorderSize = style.WindowBorderSize;
+		const auto backupWindowRounding = style.WindowRounding;
+
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, { backupWindowBg.x, backupWindowBg.y, backupWindowBg.z, 1 });
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
+
 		if (ImGui::Begin("MainWindow", nullptr, windowFlags))
 		{
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, backupWindowBg);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, backupWindowBorderSize);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, backupWindowRounding);
+
 			if (hasMenuBar)
 			{
 				if (ImGui::BeginMenuBar())
@@ -356,8 +364,14 @@ void Window::OnDrawInternal()
 			}
 
 			OnDraw();
+
+			ImGui::PopStyleColor(1);
+			ImGui::PopStyleVar(2);
 		}
 		ImGui::End();
+
+		ImGui::PopStyleColor(1);
+		ImGui::PopStyleVar(2);
 	}
 
 	ImGui::Render();
