@@ -16,7 +16,7 @@
 	#include <gl/GL.h>
 
 	#ifdef _MSC_VER
-		#define GL_APIENTRY __stdcall
+		#define GL_APIENTRY APIENTRY
 	#else
 		#define GL_APIENTRY
 	#endif
@@ -38,10 +38,10 @@ static constexpr GLenum GL_NUM_EXTENSIONS = 0x821D;
 using GLDEBUGPROC = void (GL_APIENTRY*)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
 	const GLchar* message, const void* userParam);
 
-using glGetStringi_t = const GLubyte* (*)(GLenum name, GLuint index);
+using glGetStringi_t = const GLubyte* (GL_APIENTRY*)(GLenum name, GLuint index);
 
-using glDebugMessageCallback_t = void(*)(GLDEBUGPROC callback, const void* userParam);
-using glDebugMessageControl_t = void (*)(GLenum source, GLenum type, GLenum severity, GLsizei count,
+using glDebugMessageCallback_t = void(GL_APIENTRY*)(GLDEBUGPROC callback, const void* userParam);
+using glDebugMessageControl_t = void (GL_APIENTRY*)(GLenum source, GLenum type, GLenum severity, GLsizei count,
 	const GLuint* ids, GLboolean enabled);
 
 using glDebugMessageCallbackARB_t = glDebugMessageCallback_t;
@@ -74,7 +74,7 @@ void ImGuiDesktop::SetupBasicWindowAttributes()
 #endif
 }
 
-static void DebugCallbackFn(GLenum source, GLenum type, GLuint id,
+static void GL_APIENTRY DebugCallbackFn(GLenum source, GLenum type, GLuint id,
 	GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
 	// These get sent even when using the ARB extension on nvidia drivers
