@@ -44,7 +44,7 @@ void Application::Update()
 		if (interface->IsUpdateQueued() || !interface->IsSleepingEnabled())
 		{
 			skipWait = true;
-			break;
+			interface->ClearUpdateQueued();
 		}
 	}
 
@@ -53,18 +53,22 @@ void Application::Update()
 	{
 		//m_IsUpdateQueued = false;
 
+		bool shouldQueueWakeup = false;
+
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
-			bool shouldQueueWakeup = true;
+			shouldQueueWakeup = true;
 
 			if (!ImGui_ImplSDL2_ProcessEvent(&event))
 			{
 				switch (event.type)
 				{
 				case SDL_QUIT:
+					m_ShouldQuit = true;
 					for (Window* wnd : m_Windows)
 						wnd->SetShouldClose(true);
+
 					break;
 
 				case SDL_USEREVENT:
@@ -88,9 +92,8 @@ void Application::Update()
 						{
 							if (auto managedWindow = mh_ensure(reinterpret_cast<Window*>(SDL_GetWindowData(window, SDL_WINDOW_PTR))))
 							{
-								managedWindow->SetShouldClose(true);
+								static_cast<IWindowApplicationInterface*>(managedWindow)->OnCloseButtonClicked();
 							}
-							break;
 						}
 
 						break;
@@ -100,16 +103,17 @@ void Application::Update()
 				}
 				}
 			}
-
-			// Imgui has a lot of "measure, then update next frame" sort of stuff.
-			// Make sure we have an "extra" update before every sleep to account for that.
-			//if (shouldQueueWakeup)
-			//	QueueUpdate();
 		}
+
+		// Imgui has a lot of "measure, then update next frame" sort of stuff.
+		// Make sure we have an "extra" update before every sleep to account for that.
+		if (shouldQueueWakeup)
+			QueueUpdate(nullptr);
 	}
 
-	for (IWindowApplicationInterface* wnd : m_Windows)
-		wnd->Update();
+	// Cannot be a range based for loop, stuff might get removed/added during the updates
+	for (size_t i = 0; i < m_Windows.size(); i++)
+		static_cast<IWindowApplicationInterface*>(m_Windows[i])->Update();
 
 	std::erase_if(m_ManagedWindows, [](const auto& wnd) { return wnd->ShouldClose(); });
 }
@@ -119,13 +123,20 @@ void Application::QueueUpdate(Window* window)
 	SDL_Event event{};
 	event.type = GetCustomWindowEventType();
 	event.user.code = (int)CustomWindowEventCodes::Wakeup;
-	event.user.windowID = SDL_GetWindowID(window->GetSDLWindow());
+	event.user.windowID = window ? SDL_GetWindowID(window->GetSDLWindow()) : 0;
 	SDL_PushEvent(&event);
 }
 
 bool Application::ShouldQuit() const
 {
-	return m_ShouldQuit && m_Windows.empty();
+	for (Window* wnd : m_Windows)
+	{
+		if (!wnd->ShouldClose() && wnd->IsPrimaryAppWindow())
+			return false;
+	}
+
+	return true;
+	//return m_ShouldQuit;
 }
 
 void Application::AddManagedWindow(std::unique_ptr<Window> window)

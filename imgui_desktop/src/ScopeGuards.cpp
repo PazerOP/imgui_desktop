@@ -85,3 +85,15 @@ Indent::~Indent()
 	for (unsigned i = 0; i < m_Count; i++)
 		ImGui::Unindent();
 }
+
+Context::Context(ImGuiContext* newContext) :
+	m_OldContext(ImGui::GetCurrentContext()),
+	m_NewContext(newContext)
+{
+	ImGui::SetCurrentContext(m_NewContext);
+}
+Context::~Context()
+{
+	assert(ImGui::GetCurrentContext() == m_NewContext);
+	ImGui::SetCurrentContext(m_OldContext);
+}

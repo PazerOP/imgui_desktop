@@ -28,8 +28,10 @@ namespace ImGuiDesktop
 	private:
 		friend class Application;
 		virtual bool IsUpdateQueued() const = 0;
+		virtual void ClearUpdateQueued() = 0;
 		virtual bool IsSleepingEnabled() const = 0;
 		virtual void Update() = 0;
+		virtual void OnCloseButtonClicked() = 0;
 	};
 
 	class Window : public IWindowApplicationInterface
@@ -49,11 +51,18 @@ namespace ImGuiDesktop
 
 		void QueueUpdate();
 
+		void ShowWindow();
+		void HideWindow();
+		void RaiseWindow();
+		bool IsVisible() const;
+
 		GLContextVersion GetGLContextVersion() const;
 
 		float GetFPS() const { return m_FPS; }
 
 		Application& GetApplication() const { return *m_Application; }
+
+		bool IsPrimaryAppWindow() const { return m_IsPrimaryAppWindow; }
 
 	protected:
 		virtual void OnImGuiInit() {}
@@ -61,9 +70,12 @@ namespace ImGuiDesktop
 		virtual void OnPreDraw() {}
 		virtual void OnDraw() = 0;
 		virtual void OnEndFrame() {}
+		void OnCloseButtonClicked() override;
 
 		virtual bool HasMenuBar() const { return false; }
 		virtual void OnDrawMenuBar() {}
+
+		void SetIsPrimaryAppWindow(bool isPrimaryAppWindow);
 
 		bool IsSleepingEnabled() const override { return true; }
 
@@ -73,7 +85,9 @@ namespace ImGuiDesktop
 		void Update() override final;
 
 		bool IsUpdateQueued() const override final { return m_IsUpdateQueued; }
+		void ClearUpdateQueued() override final { m_IsUpdateQueued = false; }
 
+		bool m_IsPrimaryAppWindow = false;
 		bool m_IsImGuiInit = false;
 		bool m_ShouldClose = false;
 		bool m_IsUpdateQueued = false;

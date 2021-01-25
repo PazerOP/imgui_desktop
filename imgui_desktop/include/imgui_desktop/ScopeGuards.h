@@ -5,6 +5,7 @@
 #include <string_view>
 
 enum ImGuiCol_ : int;
+struct ImGuiContext;
 struct ImVec4;
 
 namespace ImGuiDesktop
@@ -55,6 +56,16 @@ namespace ImGuiDesktop
 
 		private:
 			unsigned m_Count;
+		};
+
+		struct Context final : mh::disable_copy_move
+		{
+			explicit Context(ImGuiContext* newContext);
+			~Context();
+
+		private:
+			ImGuiContext* m_OldContext;
+			ImGuiContext* m_NewContext;
 		};
 	}
 }

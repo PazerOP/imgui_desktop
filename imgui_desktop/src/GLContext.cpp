@@ -67,9 +67,11 @@ void ImGuiDesktop::SetupBasicWindowAttributes()
 	SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8));
 	SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0));
 	SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0));
-	SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0));
+	SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)); // Needed for vsync
 
+#ifdef _DEBUG
 	SDL_TRY_SET_ATTR(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG));
+#endif
 }
 
 static void DebugCallbackFn(GLenum source, GLenum type, GLuint id,
@@ -209,8 +211,10 @@ namespace
 						std::exit(1);
 					}
 
-					InstallDebugCallback({ window, context });
-					SDL_GL_SetSwapInterval(1);
+					{
+						GLContextScope scope(window, context);
+						InstallDebugCallback(scope);
+					}
 
 					m_GLContext = context;
 				}

@@ -2,6 +2,7 @@
 #include "GLContext.h"
 #include "ImGuiDesktopInternal.h"
 #include "Application.h"
+#include "ScopeGuards.h"
 
 #ifdef IMGUI_USE_GLBINDING
 #include <glbinding/glbinding.h>
@@ -108,7 +109,7 @@ Window::Window(Application& app, uint32_t width, uint32_t height, const char* ti
 	SetupBasicWindowAttributes();
 
 	m_WindowImpl.reset(SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height,
-		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI));
+		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI));
 	if (!m_WindowImpl)
 		throw std::runtime_error("Failed to create SDL window");
 
@@ -116,13 +117,25 @@ Window::Window(Application& app, uint32_t width, uint32_t height, const char* ti
 
 	auto glScope = EnterGLScope();
 
+	if (SDL_GL_SetSwapInterval(1))
+		SDL_PRINT_AND_CLEAR_ERROR();
+
 #ifdef IMGUI_USE_GLBINDING
 	glbinding::initialize([](const char* fn) { return reinterpret_cast<glbinding::ProcAddress>(SDL_GL_GetProcAddress(fn)); });
 #endif
 
 	ValidateDriver();
 
+	const bool isFirstContext = !ImGui::GetCurrentContext();
 	m_ImGuiContext.reset(ImGui::CreateContext(&app.GetFontAtlas()));
+
+	if (isFirstContext)
+	{
+		assert(ImGui::GetCurrentContext() == m_ImGuiContext.get());
+		ImGui::SetCurrentContext(nullptr); // So ScopeGuards::Context sets it back to nullptr after we leave this scope
+	}
+
+	ScopeGuards::Context imGuiContextScope(m_ImGuiContext.get());
 
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	ImGui::GetIO().IniFilename = nullptr; // Don't save stuff... for now
@@ -144,8 +157,6 @@ Window::Window(Application& app, uint32_t width, uint32_t height, const char* ti
 		throw std::runtime_error("Failed to initialize ImGui GLFW impl");
 
 	static_cast<IApplicationWindowInterface&>(GetApplication()).AddWindow(this);
-
-	ImGui::SetCurrentContext(nullptr);
 }
 
 Window::~Window()
@@ -175,6 +186,26 @@ void Window::QueueUpdate()
 {
 	m_IsUpdateQueued = true;
 	GetApplication().QueueUpdate(this);
+}
+
+void Window::ShowWindow()
+{
+	SDL_ShowWindow(m_WindowImpl.get());
+}
+
+void Window::HideWindow()
+{
+	SDL_HideWindow(m_WindowImpl.get());
+}
+
+void Window::RaiseWindow()
+{
+	SDL_RaiseWindow(m_WindowImpl.get());
+}
+
+bool Window::IsVisible() const
+{
+	return SDL_GetWindowFlags(m_WindowImpl.get()) & SDL_WINDOW_SHOWN;
 }
 
 bool Window::HasFocus() const
@@ -220,7 +251,7 @@ void Window::OnDrawInternal()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	assert(!ImGui::GetCurrentContext());
-	ImGui::SetCurrentContext(m_ImGuiContext.get());
+	ScopeGuards::Context imGuiContextScope(m_ImGuiContext.get());
 
 	if (!m_IsImGuiInit)
 	{
@@ -297,9 +328,6 @@ void Window::OnDrawInternal()
 
 	SDL_GL_SwapWindow(m_WindowImpl.get());
 	OnEndFrame();
-
-	assert(ImGui::GetCurrentContext() == m_ImGuiContext.get());
-	ImGui::SetCurrentContext(nullptr);
 }
 
 void Window::CustomDeleters::operator()(SDL_Window* window) const
@@ -315,4 +343,14 @@ void Window::CustomDeleters::operator()(ImGuiContext* context) const
 GLContextVersion Window::GetGLContextVersion() const
 {
 	return m_GLContext->GetVersion();
+}
+
+void Window::OnCloseButtonClicked()
+{
+	SetShouldClose(true);
+}
+
+void Window::SetIsPrimaryAppWindow(bool isPrimaryAppWindow)
+{
+	m_IsPrimaryAppWindow = isPrimaryAppWindow;
 }
