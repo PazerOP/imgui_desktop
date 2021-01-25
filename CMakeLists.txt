@@ -9,6 +9,8 @@ set(imgui_USE_SDL2 on)
 add_subdirectory(submodules/imgui)
 
 add_library(imgui_desktop
+	"imgui_desktop/include/imgui_desktop/Application.h"
+	"imgui_desktop/src/Application.cpp"
 	"imgui_desktop/include/imgui_desktop/ImGuiHelpers.h"
 	"imgui_desktop/src/GLContext.cpp"
 	"imgui_desktop/src/GLContext.h"

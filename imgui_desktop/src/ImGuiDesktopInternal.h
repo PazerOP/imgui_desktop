@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mh/source_location.hpp>
 #include <mh/text/string_insertion.hpp>
 
 #include <string>
@@ -7,20 +8,20 @@
 
 namespace ImGuiDesktop
 {
-	void PrintLogMsg(const std::string_view& msg);
-	void PrintLogMsg(const char* msg);
+	void PrintLogMsg(const std::string_view& msg, MH_SOURCE_LOCATION_AUTO(location));
+	void PrintLogMsg(const char* msg, MH_SOURCE_LOCATION_AUTO(location));
 }
 
 #define SDL_PRINT_AND_CLEAR_ERROR() \
-	[](const char* func, int line) \
+	[](MH_SOURCE_LOCATION_AUTO(location)) \
 	{ \
 		auto err = SDL_GetError(); \
 		if (err != nullptr && err[0] != '\0') \
 		{ \
 			using namespace std::string_literals; \
-			::ImGuiDesktop::PrintLogMsg(""s << func << ':' << line << ": SDL_GetError() returned " << err); \
+			::ImGuiDesktop::PrintLogMsg("SDL_GetError() returned "s << err, location); \
 			SDL_ClearError(); \
 			return false; \
 		} \
 		return true; \
-	}(__FUNCTION__, __LINE__)
+	}()

@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <mutex>
+#include <string_view>
 
 struct SDL_Window;
 
@@ -27,12 +28,19 @@ namespace ImGuiDesktop
 	};
 
 	std::shared_ptr<GLContext> GetOrCreateGLContext(SDL_Window* window);
+	void SetupBasicWindowAttributes();
 
 	class GLContextScope
 	{
 	public:
 		GLContextScope(SDL_Window* window, const std::shared_ptr<GLContext>& context);
 		~GLContextScope();
+
+		GLContextVersion GetVersion() const { return m_Context->GetVersion(); }
+		bool HasExtension(const std::string_view& extensionName) const;
+
+		void* GetProcAddress(const char* symbolName) const;
+		template<typename T> T GetProcAddress(const char* symbolName) const { return static_cast<T>(GetProcAddress(symbolName)); }
 
 	private:
 		std::shared_ptr<GLContext> m_Context;
