@@ -6,8 +6,13 @@
 #include <mh/text/format.hpp>
 #include <SDL.h>
 
+#include <cassert>
+#include <sstream>
+
 #ifdef IMGUI_USE_GLBINDING
 	#error fixme
+#elif defined(IMGUI_USE_GLAD2)
+	#include <glad/gl.h>
 #else
 	#ifdef WIN32
 		#include <Windows.h>
@@ -20,32 +25,36 @@
 	#else
 		#define GL_APIENTRY
 	#endif
+
+	using GLchar = char;
+	static constexpr GLenum GL_DEBUG_SEVERITY_NOTIFICATION = 0x826B;
+	static constexpr GLenum GL_DEBUG_SEVERITY_LOW = 0x9148;
+	static constexpr GLenum GL_DEBUG_SEVERITY_LOW_ARB = 0x9148;
+	static constexpr GLenum GL_DEBUG_SEVERITY_MEDIUM = 0x9147;
+	static constexpr GLenum GL_DEBUG_SEVERITY_HIGH = 0x9146;
+	static constexpr GLenum GL_DEBUG_OUTPUT = 0x92E0;
+	static constexpr GLenum GL_DEBUG_OUTPUT_SYNCHRONOUS = 0x8242;
+	static constexpr GLenum GL_NUM_EXTENSIONS = 0x821D;
+
+	using GLDEBUGPROC = void (GL_APIENTRY*)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+		const GLchar* message, const void* userParam);
+
+	using glGetStringi_t = const GLubyte* (GL_APIENTRY*)(GLenum name, GLuint index);
+
+	using glDebugMessageCallback_t = void(GL_APIENTRY*)(GLDEBUGPROC callback, const void* userParam);
+	using glDebugMessageControl_t = void (GL_APIENTRY*)(GLenum source, GLenum type, GLenum severity, GLsizei count,
+		const GLuint* ids, GLboolean enabled);
+
+	using glDebugMessageCallbackARB_t = glDebugMessageCallback_t;
+	using glDebugMessageControlARB_t = glDebugMessageControl_t;
+
+	#define LOOKUP_GL_SYMBOL(ctx, name) \
+		const auto name = mh_ensure((ctx).GetProcAddress<name ## _t>(#name))
 #endif
 
-#include <cassert>
-#include <sstream>
-
-using GLchar = char;
-static constexpr GLenum GL_DEBUG_SEVERITY_NOTIFICATION = 0x826B;
-static constexpr GLenum GL_DEBUG_SEVERITY_LOW = 0x9148;
-static constexpr GLenum GL_DEBUG_SEVERITY_LOW_ARB = 0x9148;
-static constexpr GLenum GL_DEBUG_SEVERITY_MEDIUM = 0x9147;
-static constexpr GLenum GL_DEBUG_SEVERITY_HIGH = 0x9146;
-static constexpr GLenum GL_DEBUG_OUTPUT = 0x92E0;
-static constexpr GLenum GL_DEBUG_OUTPUT_SYNCHRONOUS = 0x8242;
-static constexpr GLenum GL_NUM_EXTENSIONS = 0x821D;
-
-using GLDEBUGPROC = void (GL_APIENTRY*)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
-	const GLchar* message, const void* userParam);
-
-using glGetStringi_t = const GLubyte* (GL_APIENTRY*)(GLenum name, GLuint index);
-
-using glDebugMessageCallback_t = void(GL_APIENTRY*)(GLDEBUGPROC callback, const void* userParam);
-using glDebugMessageControl_t = void (GL_APIENTRY*)(GLenum source, GLenum type, GLenum severity, GLsizei count,
-	const GLuint* ids, GLboolean enabled);
-
-using glDebugMessageCallbackARB_t = glDebugMessageCallback_t;
-using glDebugMessageControlARB_t = glDebugMessageControl_t;
+#ifndef LOOKUP_GL_SYMBOL
+#define LOOKUP_GL_SYMBOL(ctx, name)
+#endif
 
 using namespace ImGuiDesktop;
 using namespace std::string_literals;
@@ -56,9 +65,6 @@ using namespace std::string_literals;
 		SDL_PRINT_AND_CLEAR_ERROR(); \
 		assert(!"Failed to run " #func); \
 	}
-
-#define LOOKUP_GL_SYMBOL(ctx, name) \
-	const auto name = mh_ensure((ctx).GetProcAddress<name ## _t>(#name))
 
 void ImGuiDesktop::SetupBasicWindowAttributes()
 {
@@ -74,7 +80,7 @@ void ImGuiDesktop::SetupBasicWindowAttributes()
 #endif
 }
 
-static void GL_APIENTRY DebugCallbackFn(GLenum source, GLenum type, GLuint id,
+static void DebugCallbackFn(GLenum source, GLenum type, GLuint id,
 	GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
 	// These get sent even when using the ARB extension on nvidia drivers
@@ -198,7 +204,7 @@ namespace
 
 					if (!context)
 					{
-						// Neither worked, show an error and quit
+						// Nothing worked, show an error and quit
 						std::stringstream ss;
 						ss << "Failed to initialize OpenGL " << VERSION_4
 							<< ", OpenGL " << VERSION_3
@@ -213,6 +219,14 @@ namespace
 
 					{
 						GLContextScope scope(window, context);
+
+#ifdef IMGUI_USE_GLAD2
+						gladLoadGL([](const char* name) __declspec(noinline)
+							{
+								return reinterpret_cast<GLADapiproc>(SDL_GL_GetProcAddress(name));
+							});
+#endif
+
 						InstallDebugCallback(scope);
 					}
 

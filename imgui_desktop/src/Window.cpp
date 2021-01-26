@@ -253,10 +253,11 @@ void Window::OnDrawInternal()
 	assert(!ImGui::GetCurrentContext());
 	ScopeGuards::Context imGuiContextScope(m_ImGuiContext.get());
 
-	if (!m_IsImGuiInit)
+	if (!m_IsInit)
 	{
+		OnOpenGLInit();
 		OnImGuiInit();
-		m_IsImGuiInit = true;
+		m_IsInit = true;
 	}
 
 	OnPreDraw();

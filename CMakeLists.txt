@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 3.0)
 project(imgui_desktop)
 
 set(imgui_USE_OPENGL2 on)
-# set(imgui_USE_OPENGL3 on)
+set(imgui_USE_OPENGL3 on)
 # set(imgui_USE_GLBINDING on)
+set(imgui_USE_GLAD2 on)
 set(imgui_USE_SDL2 on)
 add_subdirectory(submodules/imgui)
 
@@ -24,11 +25,12 @@ add_library(imgui_desktop
 )
 
 find_package(SDL2 CONFIG REQUIRED)
-# find_package(glbinding CONFIG REQUIRED)
+find_package(glad2 REQUIRED)
 target_link_libraries(imgui_desktop
 	SDL2::SDL2
 	mh_stuff
 	imgui
+	glad2::glad2
 )
 # target_link_libraries(imgui_desktop glbinding::glbinding)
 

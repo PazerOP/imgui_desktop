@@ -66,6 +66,7 @@ namespace ImGuiDesktop
 
 	protected:
 		virtual void OnImGuiInit() {}
+		virtual void OnOpenGLInit() {}
 		virtual void OnUpdate() {}
 		virtual void OnPreDraw() {}
 		virtual void OnDraw() = 0;
@@ -88,7 +89,7 @@ namespace ImGuiDesktop
 		void ClearUpdateQueued() override final { m_IsUpdateQueued = false; }
 
 		bool m_IsPrimaryAppWindow = false;
-		bool m_IsImGuiInit = false;
+		bool m_IsInit = false;
 		bool m_ShouldClose = false;
 		bool m_IsUpdateQueued = false;
 		float m_SleepDuration = 0.1f;
