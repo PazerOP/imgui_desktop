@@ -13,6 +13,7 @@
 	#error fixme
 #elif defined(IMGUI_USE_GLAD2)
 	#include <glad/gl.h>
+	#define GL_APIENTRY GLAD_API_PTR
 #else
 	#ifdef WIN32
 		#include <Windows.h>
@@ -80,7 +81,7 @@ void ImGuiDesktop::SetupBasicWindowAttributes()
 #endif
 }
 
-static void DebugCallbackFn(GLenum source, GLenum type, GLuint id,
+static void GL_APIENTRY DebugCallbackFn(GLenum source, GLenum type, GLuint id,
 	GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
 	// These get sent even when using the ARB extension on nvidia drivers
