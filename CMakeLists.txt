@@ -7,7 +7,7 @@ set(imgui_USE_OPENGL3 on)
 # set(imgui_USE_GLBINDING on)
 set(imgui_USE_GLAD2 on)
 set(imgui_USE_SDL2 on)
-add_subdirectory(submodules/imgui)
+add_subdirectory(imgui_cmake)
 
 add_library(imgui_desktop
 	"imgui_desktop/include/imgui_desktop/Application.h"
