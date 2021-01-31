@@ -115,7 +115,18 @@ void Application::Update()
 	for (size_t i = 0; i < m_Windows.size(); i++)
 		static_cast<IWindowApplicationInterface*>(m_Windows[i])->Update();
 
-	std::erase_if(m_ManagedWindows, [](const auto& wnd) { return wnd->ShouldClose(); });
+	for (auto it = m_ManagedWindows.begin(); it != m_ManagedWindows.end(); )
+	{
+		if (it->get()->ShouldClose())
+		{
+			OnRemovingManagedWindow(*it->get());
+			it = m_ManagedWindows.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
 }
 
 void Application::QueueUpdate(Window* window)
@@ -141,11 +152,18 @@ bool Application::ShouldQuit() const
 
 void Application::AddManagedWindow(std::unique_ptr<Window> window)
 {
+	if (!mh_ensure(window))
+		return;
+
+	OnAddingManagedWindow(*window.get());
 	m_ManagedWindows.push_back(std::move(window));
 }
 
 void Application::AddWindow(Window* window)
 {
+	if (!mh_ensure(window))
+		return;
+
 	SDL_SetWindowData(window->GetSDLWindow(), SDL_WINDOW_PTR, window);
 	m_Windows.push_back(window);
 }

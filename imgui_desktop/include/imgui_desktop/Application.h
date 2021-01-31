@@ -20,7 +20,7 @@ namespace ImGuiDesktop
 		virtual void RemoveWindow(Window* window) = 0;
 	};
 
-	class Application final : public IApplicationWindowInterface
+	class Application : public IApplicationWindowInterface
 	{
 	public:
 		Application();
@@ -34,6 +34,10 @@ namespace ImGuiDesktop
 		ImFontAtlas& GetFontAtlas() const { return *m_SharedFontAtlas.get(); }
 
 		void AddManagedWindow(std::unique_ptr<Window> window);
+
+	protected:
+		virtual void OnAddingManagedWindow(Window& window) {}
+		virtual void OnRemovingManagedWindow(Window& window) {}
 
 	private:
 		void AddWindow(Window* window) override final;
