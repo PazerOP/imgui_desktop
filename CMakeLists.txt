@@ -9,7 +9,7 @@ set(imgui_USE_GLAD2 on)
 set(imgui_USE_SDL2 on)
 add_subdirectory(imgui_cmake)
 
-add_library(imgui_desktop
+add_library(imgui_desktop STATIC
 	"imgui_desktop/include/imgui_desktop/Application.h"
 	"imgui_desktop/src/Application.cpp"
 	"imgui_desktop/include/imgui_desktop/ImGuiHelpers.h"
@@ -26,15 +26,18 @@ add_library(imgui_desktop
 
 find_package(SDL2 CONFIG REQUIRED)
 find_package(glad2 REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 target_link_libraries(imgui_desktop
-	SDL2::SDL2
-	mh_stuff
-	imgui
-	glad2::glad2
+	PUBLIC
+		imgui
+		glad2::glad2
+	PRIVATE
+		mh::stuff
+		SDL2::SDL2
+		fmt::fmt
 )
-# target_link_libraries(imgui_desktop glbinding::glbinding)
 
-set_property(TARGET imgui_desktop PROPERTY CXX_STANDARD 20)
+target_compile_features(imgui_desktop PUBLIC "cxx_std_20")
 
 target_include_directories(imgui_desktop PRIVATE imgui_desktop/include/imgui_desktop)
 target_include_directories(imgui_desktop PUBLIC imgui_desktop/include)

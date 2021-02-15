@@ -13,6 +13,8 @@
 #include <glbinding-aux/ContextInfo.h>
 #include <glbinding-aux/types_to_string.h>
 using namespace gl33core;
+#elif IMGUI_USE_GLAD2
+#include <glad/gl.h>
 #else
 #ifdef WIN32
 #include <Windows.h>
