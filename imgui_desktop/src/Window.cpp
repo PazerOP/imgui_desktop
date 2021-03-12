@@ -115,7 +115,7 @@ Window::Window(Application& app, uint32_t width, uint32_t height, const char* ti
 	if (!m_WindowImpl)
 		throw std::runtime_error("Failed to create SDL window");
 
-	m_GLContext = GetOrCreateGLContext(m_WindowImpl.get());
+	m_GLContext = static_cast<IApplicationWindowInterface&>(app).GetOrCreateGLContext(m_WindowImpl.get());
 
 	auto glScope = EnterGLScope();
 

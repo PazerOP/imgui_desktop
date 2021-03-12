@@ -4,9 +4,11 @@
 #include <vector>
 
 struct ImFontAtlas;
+struct SDL_Window;
 
 namespace ImGuiDesktop
 {
+	class GLContext;
 	class Window;
 
 	class IApplicationWindowInterface
@@ -18,6 +20,8 @@ namespace ImGuiDesktop
 		friend class Window;
 		virtual void AddWindow(Window* window) = 0;
 		virtual void RemoveWindow(Window* window) = 0;
+
+		virtual std::shared_ptr<GLContext> GetOrCreateGLContext(SDL_Window* window) = 0;
 	};
 
 	class Application : public IApplicationWindowInterface
@@ -39,9 +43,16 @@ namespace ImGuiDesktop
 		virtual void OnAddingManagedWindow(Window& window) {}
 		virtual void OnRemovingManagedWindow(Window& window) {}
 
+		virtual void OnOpenGLInit() {}
+		virtual void OnEndFrame() {}
+
 	private:
 		void AddWindow(Window* window) override final;
 		void RemoveWindow(Window* window) override final;
+
+		std::shared_ptr<GLContext> GetOrCreateGLContext(SDL_Window* window) override final;
+
+		std::shared_ptr<GLContext> m_GLContext; // TODO: Do we actually ever want to release this (without exiting)
 
 		bool m_ShouldQuit = false;
 		std::vector<Window*> m_Windows;

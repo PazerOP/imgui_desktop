@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "GLContext.h"
 #include "Window.h"
 
 #include <mh/error/ensure.hpp>
@@ -115,6 +116,8 @@ void Application::Update()
 	for (size_t i = 0; i < m_Windows.size(); i++)
 		static_cast<IWindowApplicationInterface*>(m_Windows[i])->Update();
 
+	OnEndFrame();
+
 	for (auto it = m_ManagedWindows.begin(); it != m_ManagedWindows.end(); )
 	{
 		if (it->get()->ShouldClose())
@@ -171,4 +174,23 @@ void Application::AddWindow(Window* window)
 void Application::RemoveWindow(Window* window)
 {
 	mh_ensure(std::erase(m_Windows, window));
+}
+
+std::shared_ptr<GLContext> Application::GetOrCreateGLContext(SDL_Window* window)
+{
+	auto context = ImGuiDesktop::GetOrCreateGLContext(window);
+
+	if (!m_GLContext)
+	{
+		m_GLContext = context;
+
+		GLContextScope scope(window, m_GLContext);
+		OnOpenGLInit();
+	}
+	else
+	{
+		assert(m_GLContext == context);
+	}
+
+	return context;
 }
