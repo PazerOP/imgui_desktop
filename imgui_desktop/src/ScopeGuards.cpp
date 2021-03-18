@@ -1,12 +1,39 @@
 #include "ScopeGuards.h"
 
+#include <mh/compiler.hpp>
 #include <imgui.h>
 
 using namespace ImGuiDesktop::ScopeGuards;
 
+namespace
+{
+	struct SplitInt
+	{
+		int32_t lower;
+		int32_t upper;
+	};
+}
+
 ID::ID(int int_id)
 {
 	ImGui::PushID(int_id);
+}
+
+ID::ID(int64_t int64_id) :
+	m_PopCount(2)
+{
+	auto split = std::bit_cast<SplitInt>(int64_id);
+
+	ImGui::PushID(split.lower);
+	ImGui::PushID(split.upper);
+}
+ID::ID(uint64_t int64_id) :
+	m_PopCount(2)
+{
+	auto split = std::bit_cast<SplitInt>(int64_id);
+
+	ImGui::PushID(split.lower);
+	ImGui::PushID(split.upper);
 }
 
 ID::ID(const void* ptr_id)
@@ -25,7 +52,8 @@ ID::ID(const std::string_view& sv) : ID(sv.data(), sv.data() + sv.size())
 
 ID::~ID()
 {
-	ImGui::PopID();
+	for (uint8_t i = 0; i < m_PopCount; i++)
+		ImGui::PopID();
 }
 
 StyleColor::StyleColor(ImGuiCol_ color, const ImVec4& value, bool enabled) :

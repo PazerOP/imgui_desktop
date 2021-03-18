@@ -16,10 +16,16 @@ namespace ImGuiDesktop
 		{
 		public:
 			explicit ID(int int_id);
-			explicit ID(const void* ptr_id);
+			explicit ID(int64_t int64_id);
+			explicit ID(uint64_t int64_id);
 			explicit ID(const char* str_id_begin, const char* str_id_end = nullptr);
 			explicit ID(const std::string_view& sv);
+			explicit ID(const void* ptr_id);
+
 			~ID();
+
+		private:
+			uint8_t m_PopCount = 1;
 		};
 
 		struct StyleColor : mh::disable_copy
