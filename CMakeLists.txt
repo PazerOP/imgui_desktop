@@ -12,7 +12,7 @@ set(imgui_USE_OPENGL3 on)
 # set(imgui_USE_GLBINDING on)
 set(imgui_USE_SDL2 on)
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} STATIC
 	"imgui_desktop/include/imgui_desktop/ImGuiHelpers.h"
 	"imgui_desktop/src/GLContext.cpp"
 	"imgui_desktop/src/GLContext.h"
