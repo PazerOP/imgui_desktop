@@ -6,7 +6,6 @@ set(imgui_USE_OPENGL2 on)
 set(imgui_USE_OPENGL3 on)
 set(imgui_USE_GLBINDING on)
 set(imgui_USE_SDL2 on)
-add_subdirectory(submodules/imgui)
 
 add_library(imgui_desktop
 	"imgui_desktop/include/imgui_desktop/ImGuiHelpers.h"
@@ -21,6 +20,9 @@ add_library(imgui_desktop
 	"imgui_desktop/src/ImGuiDesktopInternal.h"
 )
 
+find_package(imgui CONFIG REQUIRED)
+target_link_libraries(imgui_desktop imgui::imgui)
+
 find_package(SDL2 CONFIG REQUIRED)
 # find_package(glbinding CONFIG REQUIRED)
 target_link_libraries(imgui_desktop SDL2::SDL2 mh_stuff)
@@ -28,7 +30,6 @@ target_link_libraries(imgui_desktop SDL2::SDL2 mh_stuff)
 
 set_property(TARGET imgui_desktop PROPERTY CXX_STANDARD 20)
 
-target_link_libraries(imgui_desktop imgui)
 target_include_directories(imgui_desktop PRIVATE imgui_desktop/include/imgui_desktop)
 target_include_directories(imgui_desktop PUBLIC imgui_desktop/include)
 

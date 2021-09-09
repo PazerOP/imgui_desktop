@@ -1,0 +1,14 @@
+{
+	"name": "imgui-desktop",
+	"version-string": "2021-09-08",
+	"dependencies": [
+		"sdl2",
+		"mh-stuff",
+		{
+			"name": "imgui",
+			"features": [
+				"sdl2-binding"
+			]
+		}
+	]
+}
