@@ -48,6 +48,7 @@ endif()
 if (imgui_USE_OPENGL2 OR imgui_USE_OPENGL3)
 	find_package(glad2-gl CONFIG REQUIRED)
 	target_link_libraries(${PROJECT_NAME} PRIVATE mh::glad2-gl)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE "IMGUI_USE_GLAD2")
 
 	if (imgui_USE_OPENGL2)
 		target_compile_definitions(${PROJECT_NAME} PRIVATE "IMGUI_USE_OPENGL2")
