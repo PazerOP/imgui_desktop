@@ -3,10 +3,11 @@
 		{
 			"kind": "git",
 			"repository": "https://github.com/PazerOP/vcpkg-registry",
-			"baseline": "5cf30c9c65f254b69a1fe6b56133b3c3dea6f0fa",
+			"baseline": "6eddd563f34f4a0690c16f666308de74cfaa4bdd",
 			"packages": [
 				"imgui",
-				"mh-stuff"
+				"mh-stuff",
+				"mh-cmake-common"
 			]
 		}
 	]
