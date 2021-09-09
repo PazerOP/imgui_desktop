@@ -1,7 +1,10 @@
 #include "Window.h"
 #include "GLContext.h"
 #include "ImGuiDesktopInternal.h"
+#include "Application.h"
+#include "ScopeGuards.h"
 
+#ifdef IMGUI_USE_GLBINDING
 #include <glbinding/glbinding.h>
 #include <glbinding/gl/extension.h>
 #include <glbinding/gl33core/gl.h>
@@ -9,79 +12,57 @@
 #include <glbinding/gl20ext/gl.h>
 #include <glbinding-aux/ContextInfo.h>
 #include <glbinding-aux/types_to_string.h>
+using namespace gl33core;
+#elif IMGUI_USE_GLAD2
+#include <glad/gl.h>
+#else
+#ifdef WIN32
+#include <Windows.h>
+#endif
+#include <gl/GL.h>
+#endif
+
 #include <imgui.h>
-#include <examples/imgui_impl_sdl.h>
-#include <examples/imgui_impl_opengl2.h>
-#include <examples/imgui_impl_opengl3.h>
 #include <mh/math/interpolation.hpp>
 #include <mh/text/format.hpp>
+
+#ifdef IMGUI_USE_SDL2
+#include <imgui_impl_sdl.h>
 #include <SDL.h>
+#endif
+
+#ifdef IMGUI_USE_OPENGL3
+#include <imgui_impl_opengl3.h>
+#endif
+#ifdef IMGUI_USE_OPENGL2
+#include <imgui_impl_opengl2.h>
+#endif
 
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
 
 using namespace ImGuiDesktop;
-using namespace gl33core;
 using namespace std::string_literals;
 
-namespace
-{
-	static uint32_t GetCustomWindowEventType()
-	{
-		static uint32_t s_EventID = SDL_RegisterEvents(1);
-		return s_EventID;
-	}
-
-	enum class CustomWindowEventCodes
-	{
-		Wakeup,
-	};
-
-	static ImFontAtlas& s_ImGuiFontAtlas = []() -> ImFontAtlas&
-	{
-		static ImFontAtlas atlas;
-
-		atlas.AddFontDefault();
-
-		return atlas;
-	}();
-}
-
-static std::function<void(const std::string_view&)> s_LogFunc;
-void ImGuiDesktop::SetLogFunction(std::function<void(const std::string_view&)> func)
+static std::function<void(const std::string_view&, const mh::source_location&)> s_LogFunc;
+void ImGuiDesktop::SetLogFunction(std::function<void(const std::string_view&, const mh::source_location&)> func)
 {
 	s_LogFunc = func;
 }
 
-void ImGuiDesktop::PrintLogMsg(const std::string_view& msg)
+void ImGuiDesktop::PrintLogMsg(const std::string_view& msg, const mh::source_location& location)
 {
 	if (s_LogFunc)
-		s_LogFunc(msg);
+		s_LogFunc(msg, location);
 }
-void ImGuiDesktop::PrintLogMsg(const char* msg)
+void ImGuiDesktop::PrintLogMsg(const char* msg, const mh::source_location& location)
 {
-	PrintLogMsg(std::string_view(msg));
+	PrintLogMsg(std::string_view(msg), location);
 }
 
-static void GL_APIENTRY DebugCallbackFn(GLenum source, GLenum type, GLuint id,
-	GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
-{
-	// These get sent even when using the ARB extension on nvidia drivers
-	if (severity == gl20ext::GL_DEBUG_SEVERITY_NOTIFICATION)
-		return;
-
-	std::stringstream ss;
-
-	ss << "OpenGL Error:"
-		<< "\n\tSource   : " << source
-		<< "\n\tType     : " << type
-		<< "\n\tID       : " << id
-		<< "\n\tSeverity : " << severity
-		<< "\n\tMessage  : " << message;
-
-	PrintLogMsg(ss.str());
-}
+#ifdef IMGUI_USE_GLBINDING
+#endif
 
 static void ValidateDriver()
 {
@@ -117,55 +98,58 @@ static void ValidateDriver()
 	}
 }
 
-Window::Window(uint32_t width, uint32_t height, const char* title)
+auto Window::EnterGLScope() const
+{
+	return GLContextScope(m_WindowImpl.get(), m_GLContext);
+}
+
+Window::Window(Application& app, uint32_t width, uint32_t height, const char* title) :
+	m_Application(&app)
 {
 	SDL_Init(SDL_INIT_VIDEO);
 
+	SetupBasicWindowAttributes();
+
 	m_WindowImpl.reset(SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height,
-		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI));
+		SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI));
 	if (!m_WindowImpl)
 		throw std::runtime_error("Failed to create SDL window");
 
-	m_GLContext = GetOrCreateGLContext(m_WindowImpl.get());
+	m_GLContext = static_cast<IApplicationWindowInterface&>(app).GetOrCreateGLContext(m_WindowImpl.get());
 
-	GLContextScope glScope(m_WindowImpl.get(), m_GLContext);
+	auto glScope = EnterGLScope();
+
+	if (SDL_GL_SetSwapInterval(1))
+		SDL_PRINT_AND_CLEAR_ERROR();
+
+#ifdef IMGUI_USE_GLBINDING
 	glbinding::initialize([](const char* fn) { return reinterpret_cast<glbinding::ProcAddress>(SDL_GL_GetProcAddress(fn)); });
+#endif
 
 	ValidateDriver();
 
-	const auto extensions = glbinding::aux::ContextInfo::extensions();
+	const bool isFirstContext = !ImGui::GetCurrentContext();
+	m_ImGuiContext.reset(ImGui::CreateContext(&app.GetFontAtlas()));
 
-	if (extensions.contains(gl::GLextension::GL_KHR_debug))
+	if (isFirstContext)
 	{
-		gl20ext::glDebugMessageCallback(&DebugCallbackFn, nullptr);
-		gl20ext::glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, gl20ext::GL_DEBUG_SEVERITY_LOW, 0, nullptr, GL_FALSE);
-		gl20ext::glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, gl20ext::GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
-		gl::glEnable(gl43core::GL_DEBUG_OUTPUT);
-		PrintLogMsg("Installed GL_KHR_debug debug message callback.");
-	}
-	else if (extensions.contains(gl::GLextension::GL_ARB_debug_output))
-	{
-		gl20ext::glDebugMessageCallbackARB(&DebugCallbackFn, nullptr);
-		gl20ext::glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, gl20ext::GL_DEBUG_SEVERITY_LOW_ARB, 0, nullptr, GL_FALSE);
-		PrintLogMsg("Installed GL_ARB_debug_output debug message callback.");
-	}
-	else
-	{
-		PrintLogMsg(mh::format("No OpenGL debug message callback supported (context version {})", GetGLContextVersion()));
+		assert(ImGui::GetCurrentContext() == m_ImGuiContext.get());
+		ImGui::SetCurrentContext(nullptr); // So ScopeGuards::Context sets it back to nullptr after we leave this scope
 	}
 
-	SDL_GL_SetSwapInterval(1);
+	ScopeGuards::Context imGuiContextScope(m_ImGuiContext.get());
 
-	m_ImGuiContext.reset(ImGui::CreateContext(&s_ImGuiFontAtlas));
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	ImGui::GetIO().IniFilename = nullptr; // Don't save stuff... for now
 
+#ifdef IMGUI_USE_OPENGL3
 	if (GetGLContextVersion().m_Major >= 3)
 	{
 		if (!ImGui_ImplOpenGL3_Init())
 			throw std::runtime_error("Failed to initialize ImGui OpenGL3 impl");
 	}
 	else
+#endif
 	{
 		if (!ImGui_ImplOpenGL2_Init())
 			throw std::runtime_error("Failed to initialize ImGui OpenGL2 impl");
@@ -174,20 +158,12 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 	if (!ImGui_ImplSDL2_InitForOpenGL(m_WindowImpl.get(), m_GLContext.get()))
 		throw std::runtime_error("Failed to initialize ImGui GLFW impl");
 
-	ImGuiStyle& style = ImGui::GetStyle();
-	style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-	style.WindowBorderSize = 0;
-	style.WindowRounding = 0;
+	static_cast<IApplicationWindowInterface&>(GetApplication()).AddWindow(this);
 }
 
-ImFontAtlas& Window::GetFontAtlas()
+Window::~Window()
 {
-	return s_ImGuiFontAtlas;
-}
-
-auto Window::EnterGLScope() const
-{
-	return GLContextScope(m_WindowImpl.get(), m_GLContext);
+	static_cast<IApplicationWindowInterface&>(GetApplication()).RemoveWindow(this);
 }
 
 void Window::GetWindowSize(uint32_t& w, uint32_t& h) const
@@ -211,12 +187,27 @@ void Window::Update()
 void Window::QueueUpdate()
 {
 	m_IsUpdateQueued = true;
+	GetApplication().QueueUpdate(this);
+}
 
-	SDL_Event event{};
-	event.type = GetCustomWindowEventType();
-	event.user.code = (int)CustomWindowEventCodes::Wakeup;
-	event.user.windowID = SDL_GetWindowID(m_WindowImpl.get());
-	SDL_PushEvent(&event);
+void Window::ShowWindow()
+{
+	SDL_ShowWindow(m_WindowImpl.get());
+}
+
+void Window::HideWindow()
+{
+	SDL_HideWindow(m_WindowImpl.get());
+}
+
+void Window::RaiseWindow()
+{
+	SDL_RaiseWindow(m_WindowImpl.get());
+}
+
+bool Window::IsVisible() const
+{
+	return SDL_GetWindowFlags(m_WindowImpl.get()) & SDL_WINDOW_SHOWN;
 }
 
 bool Window::HasFocus() const
@@ -227,42 +218,6 @@ bool Window::HasFocus() const
 void Window::OnUpdateInternal()
 {
 	auto scope = EnterGLScope();
-
-	const auto windowFlags = SDL_GetWindowFlags(m_WindowImpl.get());
-	bool skipWait = m_IsUpdateQueued || !IsSleepingEnabled();// || HasFocus();
-
-	if (skipWait || SDL_WaitEventTimeout(nullptr, int(m_SleepDuration * 1000)))
-	{
-		m_IsUpdateQueued = false;
-
-		SDL_Event event;
-		while (SDL_PollEvent(&event))
-		{
-			bool shouldQueueWakeup = true;
-
-			if (!ImGui_ImplSDL2_ProcessEvent(&event))
-			{
-				switch (event.type)
-				{
-				case SDL_QUIT:
-					SetShouldClose(true);
-					break;
-
-				case SDL_USEREVENT:
-				{
-					if (event.user.code == (int)CustomWindowEventCodes::Wakeup)
-						shouldQueueWakeup = false;
-				}
-				}
-			}
-
-			// Imgui has a lot of "measure, then update next frame" sort of stuff.
-			// Make sure we have an "extra" update before every sleep to account for that.
-			if (shouldQueueWakeup)
-				QueueUpdate();
-		}
-	}
-
 	OnUpdate();
 }
 
@@ -288,17 +243,32 @@ void Window::OnDrawInternal()
 
 	auto scope = EnterGLScope();
 
+#ifdef IMGUI_USE_GLBINDING
 	glbinding::useCurrentContext();
-	ImGui::SetCurrentContext(m_ImGuiContext.get());
+#endif
 
 	glClearStencil(0);
 	glClearDepth(1.0f);
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+	assert(!ImGui::GetCurrentContext());
+	ScopeGuards::Context imGuiContextScope(m_ImGuiContext.get());
+
+	if (!m_IsInit)
+	{
+		OnOpenGLInit();
+		OnImGuiInit();
+		m_IsInit = true;
+	}
+
+	OnPreDraw();
+
+#ifdef IMGUI_USE_OPENGL3
 	if (GetGLContextVersion().m_Major >= 3)
 		ImGui_ImplOpenGL3_NewFrame();
 	else
+#endif
 		ImGui_ImplOpenGL2_NewFrame();
 
 	ImGui_ImplSDL2_NewFrame(m_WindowImpl.get());
@@ -315,8 +285,21 @@ void Window::OnDrawInternal()
 		if (hasMenuBar)
 			windowFlags |= ImGuiWindowFlags_MenuBar;
 
+		ImGuiStyle& style = ImGui::GetStyle();
+		const auto backupWindowBg = style.Colors[ImGuiCol_WindowBg];
+		const auto backupWindowBorderSize = style.WindowBorderSize;
+		const auto backupWindowRounding = style.WindowRounding;
+
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, { backupWindowBg.x, backupWindowBg.y, backupWindowBg.z, 1 });
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
+
 		if (ImGui::Begin("MainWindow", nullptr, windowFlags))
 		{
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, backupWindowBg);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, backupWindowBorderSize);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, backupWindowRounding);
+
 			if (hasMenuBar)
 			{
 				if (ImGui::BeginMenuBar())
@@ -327,15 +310,23 @@ void Window::OnDrawInternal()
 			}
 
 			OnDraw();
+
+			ImGui::PopStyleColor(1);
+			ImGui::PopStyleVar(2);
 		}
 		ImGui::End();
+
+		ImGui::PopStyleColor(1);
+		ImGui::PopStyleVar(2);
 	}
 
 	ImGui::Render();
 
+#ifdef IMGUI_USE_OPENGL3
 	if (GetGLContextVersion().m_Major >= 3)
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	else
+#endif
 		ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
 
 	SDL_GL_SwapWindow(m_WindowImpl.get());
@@ -355,4 +346,14 @@ void Window::CustomDeleters::operator()(ImGuiContext* context) const
 GLContextVersion Window::GetGLContextVersion() const
 {
 	return m_GLContext->GetVersion();
+}
+
+void Window::OnCloseButtonClicked()
+{
+	SetShouldClose(true);
+}
+
+void Window::SetIsPrimaryAppWindow(bool isPrimaryAppWindow)
+{
+	m_IsPrimaryAppWindow = isPrimaryAppWindow;
 }

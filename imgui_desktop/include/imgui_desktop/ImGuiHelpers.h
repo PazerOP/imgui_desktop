@@ -15,4 +15,5 @@
 	ImVec4(const std::array<float, 4>& array) : x(array[0]), y(array[1]), z(array[2]), w(array[3]) {} \
 	ImVec4 operator+(const ImVec4& other) const { return ImVec4(x + other.x, y + other.y, z + other.z, w + other.w); } \
 	ImVec4 operator-(const ImVec4& other) const { return ImVec4(x - other.x, y - other.y, z - other.z, w - other.w); } \
-	ImVec4 operator*(float scalar) const { return ImVec4(x * scalar, y * scalar, z * scalar, w * scalar); }
+	ImVec4 operator*(float scalar) const { return ImVec4(x * scalar, y * scalar, z * scalar, w * scalar); } \
+	constexpr std::array<float, 4> to_array() const { return { x, y, z, w }; }

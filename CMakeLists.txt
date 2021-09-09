@@ -26,27 +26,44 @@ add_library(${PROJECT_NAME}
 )
 add_library(mh::imgui-desktop ALIAS ${PROJECT_NAME})
 
+find_package(fmt CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
-find_package(SDL2 CONFIG REQUIRED)
+find_package(mh-stuff CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME}
 	PUBLIC
 		imgui::imgui
-		glad2::glad2
 	PRIVATE
-		SDL2::SDL2
-		mh::stuff
+		mh::mh-stuff
 		fmt::fmt
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC "cxx_std_20")
+
+if (imgui_USE_SDL2)
+	find_package(SDL2 CONFIG REQUIRED)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE "IMGUI_USE_SDL2")
+	target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
+endif()
+
+if (imgui_USE_OPENGL2 OR imgui_USE_OPENGL3)
+	find_package(glad2-gl CONFIG REQUIRED)
+	target_link_libraries(${PROJECT_NAME} PRIVATE mh::glad2-gl)
+
+	if (imgui_USE_OPENGL2)
+		target_compile_definitions(${PROJECT_NAME} PRIVATE "IMGUI_USE_OPENGL2")
+	endif()
+	if (imgui_USE_OPENGL3)
+		target_compile_definitions(${PROJECT_NAME} PRIVATE "IMGUI_USE_OPENGL3")
+	endif()
+endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE imgui_desktop/include/imgui_desktop)
 target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:imgui_desktop/include>")
 
 find_package(mh-cmake-common CONFIG REQUIRED)
 mh_basic_install(
-	# PROJ_INCLUDE_DIRS
-	# 	"imgui_desktop/include"
+	PROJ_INCLUDE_DIRS
+		"imgui_desktop/include"
 )
 
 ###########################################
