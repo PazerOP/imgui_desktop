@@ -56,7 +56,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE imgui_desktop/include/imgui_d
 target_include_directories(${PROJECT_NAME}
 	PUBLIC
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/imgui_desktop/include/>"
-		"$<INSTALL_INTERFACE:imgui_desktop/include/>"
+		"$<INSTALL_INTERFACE:include/>"
 )
 
 find_package(mh-cmake-common CONFIG REQUIRED)
