@@ -5,7 +5,7 @@
 #include <mh/error/ensure.hpp>
 
 #ifdef IMGUI_USE_SDL2
-#include <backends/imgui_impl_sdl.h>
+#include <imgui_impl_sdl.h>
 #include <SDL.h>
 #endif
 

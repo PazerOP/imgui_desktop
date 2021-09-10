@@ -9,21 +9,15 @@ project(imgui-desktop
 
 set(imgui_USE_OPENGL2 on)
 set(imgui_USE_OPENGL3 on)
-# set(imgui_USE_GLBINDING on)
 set(imgui_USE_SDL2 on)
 
-add_library(${PROJECT_NAME} STATIC
-	"imgui_desktop/include/imgui_desktop/ImGuiHelpers.h"
-	"imgui_desktop/src/GLContext.cpp"
-	"imgui_desktop/src/GLContext.h"
-	"imgui_desktop/include/imgui_desktop/GLContextVersion.h"
-	"imgui_desktop/src/ScopeGuards.cpp"
-	"imgui_desktop/include/imgui_desktop/ScopeGuards.h"
-	"imgui_desktop/include/imgui_desktop/StorageHelper.h"
-	"imgui_desktop/src/Window.cpp"
-	"imgui_desktop/include/imgui_desktop/Window.h"
-	"imgui_desktop/src/ImGuiDesktopInternal.h"
+file(GLOB_RECURSE
+	IMGUI_DESKTOP_FILES
+	CONFIGURE_DEPENDS
+	LIST_DIRECTORIES false
+	imgui_desktop/*.h imgui_desktop/*.cpp
 )
+add_library(${PROJECT_NAME} STATIC "${IMGUI_DESKTOP_FILES}")
 add_library(mh::imgui-desktop ALIAS ${PROJECT_NAME})
 
 find_package(fmt CONFIG REQUIRED)
@@ -59,7 +53,11 @@ if (imgui_USE_OPENGL2 OR imgui_USE_OPENGL3)
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE imgui_desktop/include/imgui_desktop)
-target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:imgui_desktop/include>")
+target_include_directories(${PROJECT_NAME}
+	PUBLIC
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/imgui_desktop/include>"
+		"$<INSTALL_INTERFACE:imgui_desktop/include>"
+)
 
 find_package(mh-cmake-common CONFIG REQUIRED)
 mh_basic_install(
