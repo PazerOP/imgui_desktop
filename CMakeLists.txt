@@ -55,14 +55,14 @@ endif()
 target_include_directories(${PROJECT_NAME} PRIVATE imgui_desktop/include/imgui_desktop)
 target_include_directories(${PROJECT_NAME}
 	PUBLIC
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/imgui_desktop/include>"
-		"$<INSTALL_INTERFACE:imgui_desktop/include>"
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/imgui_desktop/include/>"
+		"$<INSTALL_INTERFACE:imgui_desktop/include/>"
 )
 
 find_package(mh-cmake-common CONFIG REQUIRED)
 mh_basic_install(
 	PROJ_INCLUDE_DIRS
-		"imgui_desktop/include"
+		"imgui_desktop/include/"
 )
 
 ###########################################
