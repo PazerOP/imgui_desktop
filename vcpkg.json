@@ -7,8 +7,9 @@
 		"glad2-gl",
 		"sdl2",
 		{
-			"name": "imgui",
+			"name": "mh-imgui",
 			"features": [
+				"glad2-binding",
 				"sdl2-binding",
 				"opengl2-binding",
 				"opengl3-binding"

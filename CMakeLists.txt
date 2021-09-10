@@ -21,11 +21,11 @@ add_library(${PROJECT_NAME} STATIC "${IMGUI_DESKTOP_FILES}")
 add_library(mh::imgui-desktop ALIAS ${PROJECT_NAME})
 
 find_package(fmt CONFIG REQUIRED)
-find_package(imgui CONFIG REQUIRED)
+find_package(mh-imgui CONFIG REQUIRED)
 find_package(mh-stuff CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME}
 	PUBLIC
-		imgui::imgui
+		mh::mh-imgui
 	PRIVATE
 		mh::mh-stuff
 		fmt::fmt
