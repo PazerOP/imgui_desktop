@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(imgui-desktop
+project(mh-imgui-desktop
 	VERSION 1.0
 	DESCRIPTION "Desktop application framework using imgui"
 	HOMEPAGE_URL "https://github.com/PazerOP/imgui_desktop"
@@ -18,7 +18,6 @@ file(GLOB_RECURSE
 	imgui_desktop/*.h imgui_desktop/*.cpp
 )
 add_library(${PROJECT_NAME} STATIC "${IMGUI_DESKTOP_FILES}")
-add_library(mh::imgui-desktop ALIAS ${PROJECT_NAME})
 
 find_package(fmt CONFIG REQUIRED)
 find_package(mh-imgui CONFIG REQUIRED)
@@ -40,8 +39,8 @@ if (imgui_USE_SDL2)
 endif()
 
 if (imgui_USE_OPENGL2 OR imgui_USE_OPENGL3)
-	find_package(glad2-gl CONFIG REQUIRED)
-	target_link_libraries(${PROJECT_NAME} PRIVATE mh::glad2-gl)
+	find_package(mh-glad2-gl CONFIG REQUIRED)
+	target_link_libraries(${PROJECT_NAME} PRIVATE mh::mh-glad2-gl)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC "IMGUI_USE_GLAD2")
 
 	if (imgui_USE_OPENGL2)

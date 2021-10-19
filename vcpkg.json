@@ -4,7 +4,7 @@
 	"dependencies": [
 		"mh-cmake-common",
 		"mh-stuff",
-		"glad2-gl",
+		"mh-glad2-gl",
 		"sdl2",
 		{
 			"name": "mh-imgui",

@@ -1,15 +1,15 @@
 {
-	"registries": [
-		{
-			"kind": "git",
-			"repository": "https://github.com/PazerOP/vcpkg-registry",
-			"baseline": "31cdbb32682255bb61cd96fb86af82cbad5826c8",
-			"packages": [
-				"mh-cmake-common",
-				"mh-stuff",
-				"mh-imgui",
-				"glad2-gl"
-			]
-		}
-	]
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "https://github.com/PazerOP/vcpkg-registry",
+      "baseline": "ff2be19b80f4ec6c6e261e94684d42247a108f04",
+      "packages": [
+        "mh-cmake-common",
+        "mh-stuff",
+        "mh-imgui",
+        "mh-glad2-gl"
+      ]
+    }
+  ]
 }
